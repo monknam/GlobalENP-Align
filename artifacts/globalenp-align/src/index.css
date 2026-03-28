@@ -1,0 +1,222 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================
+   GLOBALENP DESIGN SYSTEM — TOKENS
+   =========================================
+   Primary    : brand blue — buttons, highlights
+   Neutral    : 80%+ of UI — bg, text, borders
+   Secondary  : supporting UI elements
+   Extended   : red=error, yellow=warn, green=success
+   ========================================= */
+
+@theme inline {
+  /* Semantic mappings */
+  --color-background: hsl(var(--neutral-50));
+  --color-foreground: hsl(var(--neutral-900));
+  --color-border: hsl(var(--neutral-200));
+  --color-input: hsl(var(--neutral-200));
+  --color-ring: hsl(var(--primary-400));
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(var(--neutral-900));
+  --color-card-border: hsl(var(--neutral-200));
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(var(--neutral-900));
+  --color-popover-border: hsl(var(--neutral-200));
+
+  --color-primary: hsl(var(--primary-400));
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(var(--neutral-100));
+  --color-secondary-foreground: hsl(var(--neutral-800));
+
+  --color-muted: hsl(var(--neutral-100));
+  --color-muted-foreground: hsl(var(--neutral-500));
+
+  --color-accent: hsl(var(--primary-50));
+  --color-accent-foreground: hsl(var(--primary-400));
+
+  --color-destructive: hsl(var(--red-500));
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  /* Chart colors */
+  --color-chart-1: hsl(var(--primary-400));
+  --color-chart-2: hsl(var(--secondary-400));
+  --color-chart-3: hsl(var(--green-500));
+  --color-chart-4: hsl(var(--yellow-400));
+  --color-chart-5: hsl(var(--red-500));
+
+  --font-sans: 'Pretendard', 'Inter', sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  /* ── PRIMARY (Brand Blue) ── */
+  --primary-50:  221 100% 96%;
+  --primary-100: 221 91%  91%;
+  --primary-200: 221 87%  83%;
+  --primary-300: 221 84%  72%;
+  --primary-400: 221 83%  53%;   /* main button */
+  --primary-500: 224 76%  45%;   /* hover */
+  --primary-600: 226 71%  40%;
+
+  /* ── SECONDARY (Teal/Slate-blue) ── */
+  --secondary-100: 199 60%  92%;
+  --secondary-200: 199 70%  82%;
+  --secondary-400: 199 89%  48%;
+  --secondary-500: 199 80%  40%;
+
+  /* ── NEUTRAL ── */
+  --neutral-50:  210 33%  99%;   /* page background */
+  --neutral-100: 213 27%  96%;   /* secondary button bg */
+  --neutral-200: 214 32%  91%;   /* borders */
+  --neutral-300: 213 25%  84%;
+  --neutral-400: 215 20%  70%;
+  --neutral-500: 215 16%  47%;   /* muted text */
+  --neutral-600: 215 19%  35%;
+  --neutral-700: 217 24%  27%;
+  --neutral-800: 222 31%  18%;   /* sidebar bg */
+  --neutral-900: 222 47%  11%;   /* darkest text / sidebar */
+
+  /* ── EXTENDED COLORS ── */
+  --red-500:    0   84%  60%;
+  --yellow-400: 38  92%  50%;
+  --green-500:  142 76%  36%;
+  --blue-400:   207 90%  54%;
+
+  /* ── SEMANTIC MAPPINGS ── */
+  --background:       var(--neutral-50);
+  --foreground:       var(--neutral-900);
+  --border:           var(--neutral-200);
+  --input:            var(--neutral-200);
+  --ring:             var(--primary-400);
+
+  --radius: 0.75rem;
+}
+
+/* =========================================
+   BASE LAYER
+   ========================================= */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-semibold;
+  }
+}
+
+/* =========================================
+   SCROLLBAR
+   ========================================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--neutral-400)); }
+
+/* =========================================
+   UTILITY CLASSES
+   ========================================= */
+
+/* Card — default UI unit */
+.ts-card {
+  background: white;
+  border: 1px solid hsl(var(--neutral-200));
+  border-radius: 10px;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.04);
+}
+
+/* Anonymity notice box — Survey Intro */
+.ts-notice-box {
+  background: hsl(var(--primary-50));
+  border-left: 4px solid hsl(var(--primary-400));
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+}
+
+/* Primary button */
+.ts-btn-primary {
+  background: hsl(var(--primary-400));
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.ts-btn-primary:hover:not(:disabled) {
+  background: hsl(var(--primary-500));
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+}
+.ts-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Secondary button */
+.ts-btn-secondary {
+  background: hsl(var(--neutral-100));
+  color: hsl(var(--neutral-800));
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.ts-btn-secondary:hover:not(:disabled) {
+  background: hsl(var(--neutral-200));
+}
+
+/* Likert scale */
+.ts-likert-btn {
+  border: 2px solid hsl(var(--neutral-200));
+  background: white;
+  color: hsl(var(--neutral-500));
+  border-radius: 10px;
+  transition: all 0.15s;
+}
+.ts-likert-btn:hover:not(.ts-likert-selected) {
+  border-color: hsl(var(--primary-200));
+  background: hsl(var(--primary-50));
+}
+.ts-likert-selected {
+  border-color: hsl(var(--primary-400));
+  background: hsl(var(--primary-400));
+  color: white;
+}
+
+/* Input / Textarea */
+.ts-input {
+  border: 1px solid hsl(var(--neutral-300));
+  border-radius: 8px;
+  background: white;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.ts-input:focus {
+  border-color: hsl(var(--primary-400));
+  box-shadow: 0 0 0 3px hsl(var(--primary-50));
+}
+
+/* Score badge colours for dashboard */
+.ts-score-high   { color: hsl(var(--green-500)); }
+.ts-score-medium { color: hsl(var(--yellow-400)); }
+.ts-score-low    { color: hsl(var(--red-500)); }
+
+/* Legacy compat */
+.glass-card {
+  background: white;
+  border: 1px solid hsl(var(--neutral-200));
+  border-radius: 10px;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.04);
+}

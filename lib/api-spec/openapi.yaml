@@ -1,0 +1,1119 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Thingspire Flow API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication
+  - name: departments
+    description: Department management
+  - name: users
+    description: User management
+  - name: surveys
+    description: Survey cycles
+  - name: sections
+    description: Survey sections
+  - name: questions
+    description: Survey questions
+  - name: responses
+    description: Survey responses
+  - name: dashboard
+    description: Dashboard analytics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Auth ───────────────────────────────────────────────────────────────────
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout current user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ─── Departments ─────────────────────────────────────────────────────────────
+  /departments:
+    get:
+      operationId: getDepartments
+      tags: [departments]
+      summary: List all departments
+      responses:
+        "200":
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Department"
+    post:
+      operationId: createDepartment
+      tags: [departments]
+      summary: Create a department (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepartmentRequest"
+      responses:
+        "201":
+          description: Department created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /departments/{id}:
+    patch:
+      operationId: updateDepartment
+      tags: [departments]
+      summary: Update a department (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDepartmentRequest"
+      responses:
+        "200":
+          description: Department updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+
+  # ─── Users ───────────────────────────────────────────────────────────────────
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: List all users (admin/leader)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user role/department (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # ─── Survey Cycles ───────────────────────────────────────────────────────────
+  /surveys:
+    get:
+      operationId: getSurveys
+      tags: [surveys]
+      summary: List survey cycles
+      responses:
+        "200":
+          description: List of survey cycles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurveyCycle"
+    post:
+      operationId: createSurvey
+      tags: [surveys]
+      summary: Create a survey cycle (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSurveyRequest"
+      responses:
+        "201":
+          description: Survey created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyCycle"
+
+  /surveys/{id}:
+    get:
+      operationId: getSurvey
+      tags: [surveys]
+      summary: Get survey cycle with sections and questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Survey cycle detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyCycleDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateSurvey
+      tags: [surveys]
+      summary: Update survey cycle (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSurveyRequest"
+      responses:
+        "200":
+          description: Updated survey
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyCycle"
+
+  /surveys/{id}/activate:
+    post:
+      operationId: activateSurvey
+      tags: [surveys]
+      summary: Activate a survey (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Survey activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyCycle"
+
+  /surveys/{id}/close:
+    post:
+      operationId: closeSurvey
+      tags: [surveys]
+      summary: Close a survey (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Survey closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyCycle"
+
+  # ─── Sections ────────────────────────────────────────────────────────────────
+  /surveys/{surveyId}/sections:
+    get:
+      operationId: getSections
+      tags: [sections]
+      summary: List sections for a survey
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of sections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurveySection"
+    post:
+      operationId: createSection
+      tags: [sections]
+      summary: Create a section (admin only)
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSectionRequest"
+      responses:
+        "201":
+          description: Section created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveySection"
+
+  # ─── Questions ───────────────────────────────────────────────────────────────
+  /sections/{sectionId}/questions:
+    get:
+      operationId: getQuestions
+      tags: [questions]
+      summary: List questions for a section
+      parameters:
+        - name: sectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurveyQuestion"
+    post:
+      operationId: createQuestion
+      tags: [questions]
+      summary: Create a question (admin only)
+      parameters:
+        - name: sectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionRequest"
+      responses:
+        "201":
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyQuestion"
+
+  # ─── Responses ───────────────────────────────────────────────────────────────
+  /surveys/{surveyId}/my-response:
+    get:
+      operationId: getMyResponse
+      tags: [responses]
+      summary: Get current user's response for a survey
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Survey response with answers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyResponseDetail"
+        "404":
+          description: No response yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /surveys/{surveyId}/responses/start:
+    post:
+      operationId: startResponse
+      tags: [responses]
+      summary: Start or resume a survey response
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response started or resumed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyResponseDetail"
+
+  /responses/{responseId}/answers:
+    put:
+      operationId: saveAnswers
+      tags: [responses]
+      summary: Save answers for a response (temp save)
+      parameters:
+        - name: responseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAnswersRequest"
+      responses:
+        "200":
+          description: Answers saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /responses/{responseId}/submit:
+    post:
+      operationId: submitResponse
+      tags: [responses]
+      summary: Submit a survey response
+      parameters:
+        - name: responseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ─── Dashboard ───────────────────────────────────────────────────────────────
+  /dashboard/overview:
+    get:
+      operationId: getDashboardOverview
+      tags: [dashboard]
+      summary: Get overall dashboard stats
+      responses:
+        "200":
+          description: Dashboard overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardOverview"
+
+  /dashboard/surveys/{surveyId}:
+    get:
+      operationId: getSurveyDashboard
+      tags: [dashboard]
+      summary: Get detailed analytics for a specific survey
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Survey analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyDashboard"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [admin, leader, member]
+        departmentId:
+          type: ["string", "null"]
+        departmentName:
+          type: ["string", "null"]
+        isSystemAdmin:
+          type: boolean
+      required:
+        - id
+        - email
+        - role
+        - isSystemAdmin
+
+    Department:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: ["string", "null"]
+        parentId:
+          type: ["string", "null"]
+        leaderUserId:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - isActive
+        - createdAt
+
+    CreateDepartmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: ["string", "null"]
+        parentId:
+          type: ["string", "null"]
+      required:
+        - name
+
+    UpdateDepartmentRequest:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        code:
+          type: ["string", "null"]
+        leaderUserId:
+          type: ["string", "null"]
+        isActive:
+          type: ["boolean", "null"]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [admin, leader, member]
+        departmentId:
+          type: ["string", "null"]
+        departmentName:
+          type: ["string", "null"]
+        jobTitle:
+          type: ["string", "null"]
+        employmentStatus:
+          type: string
+          enum: [active, inactive, leave]
+        createdAt:
+          type: string
+      required:
+        - id
+        - email
+        - role
+        - employmentStatus
+        - createdAt
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        role:
+          type: ["string", "null"]
+          enum: [admin, leader, member, null]
+        departmentId:
+          type: ["string", "null"]
+        fullName:
+          type: ["string", "null"]
+        jobTitle:
+          type: ["string", "null"]
+
+    SurveyCycle:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        year:
+          type: integer
+        quarter:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [draft, active, closed, archived]
+        startAt:
+          type: ["string", "null"]
+        endAt:
+          type: ["string", "null"]
+        introTitle:
+          type: ["string", "null"]
+        introPurpose:
+          type: ["string", "null"]
+        introDirection:
+          type: ["string", "null"]
+        introBackground:
+          type: ["string", "null"]
+        introConfidentiality:
+          type: ["string", "null"]
+        introGuide:
+          type: ["string", "null"]
+        anonymousMinCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - year
+        - status
+        - anonymousMinCount
+        - createdAt
+        - updatedAt
+
+    SurveyCycleDetail:
+      allOf:
+        - $ref: "#/components/schemas/SurveyCycle"
+        - type: object
+          properties:
+            sections:
+              type: array
+              items:
+                $ref: "#/components/schemas/SurveySectionWithQuestions"
+          required:
+            - sections
+
+    CreateSurveyRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        year:
+          type: integer
+        quarter:
+          type: ["integer", "null"]
+        startAt:
+          type: ["string", "null"]
+        endAt:
+          type: ["string", "null"]
+        introTitle:
+          type: ["string", "null"]
+        introPurpose:
+          type: ["string", "null"]
+        introDirection:
+          type: ["string", "null"]
+        introBackground:
+          type: ["string", "null"]
+        introConfidentiality:
+          type: ["string", "null"]
+        introGuide:
+          type: ["string", "null"]
+      required:
+        - title
+        - year
+
+    UpdateSurveyRequest:
+      type: object
+      properties:
+        title:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        year:
+          type: ["integer", "null"]
+        quarter:
+          type: ["integer", "null"]
+        startAt:
+          type: ["string", "null"]
+        endAt:
+          type: ["string", "null"]
+        introTitle:
+          type: ["string", "null"]
+        introPurpose:
+          type: ["string", "null"]
+        introDirection:
+          type: ["string", "null"]
+        introBackground:
+          type: ["string", "null"]
+        introConfidentiality:
+          type: ["string", "null"]
+        introGuide:
+          type: ["string", "null"]
+
+    SurveySection:
+      type: object
+      properties:
+        id:
+          type: string
+        surveyCycleId:
+          type: string
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - surveyCycleId
+        - name
+        - sortOrder
+        - createdAt
+
+    SurveySectionWithQuestions:
+      allOf:
+        - $ref: "#/components/schemas/SurveySection"
+        - type: object
+          properties:
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/SurveyQuestion"
+          required:
+            - questions
+
+    CreateSectionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+      required:
+        - name
+        - sortOrder
+
+    SurveyQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        surveySectionId:
+          type: string
+        questionNo:
+          type: ["integer", "null"]
+        questionText:
+          type: string
+        questionType:
+          type: string
+          enum: [likert_5, short_text, long_text]
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - surveySectionId
+        - questionText
+        - questionType
+        - isRequired
+        - sortOrder
+        - isActive
+        - createdAt
+
+    CreateQuestionRequest:
+      type: object
+      properties:
+        questionNo:
+          type: ["integer", "null"]
+        questionText:
+          type: string
+        questionType:
+          type: string
+          enum: [likert_5, short_text, long_text]
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+      required:
+        - questionText
+        - questionType
+        - sortOrder
+
+    SurveyResponseDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        surveyCycleId:
+          type: string
+        isSubmitted:
+          type: boolean
+        startedAt:
+          type: string
+        submittedAt:
+          type: ["string", "null"]
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurveyAnswer"
+      required:
+        - id
+        - surveyCycleId
+        - isSubmitted
+        - startedAt
+        - answers
+
+    SurveyAnswer:
+      type: object
+      properties:
+        id:
+          type: string
+        surveyResponseId:
+          type: string
+        surveyQuestionId:
+          type: string
+        numericValue:
+          type: ["integer", "null"]
+        textValue:
+          type: ["string", "null"]
+      required:
+        - id
+        - surveyResponseId
+        - surveyQuestionId
+
+    SaveAnswersRequest:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnswerInput"
+      required:
+        - answers
+
+    AnswerInput:
+      type: object
+      properties:
+        surveyQuestionId:
+          type: string
+        numericValue:
+          type: ["integer", "null"]
+        textValue:
+          type: ["string", "null"]
+      required:
+        - surveyQuestionId
+
+    DashboardOverview:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalDepartments:
+          type: integer
+        activeSurveys:
+          type: integer
+        recentSurveys:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurveySummary"
+      required:
+        - totalUsers
+        - totalDepartments
+        - activeSurveys
+        - recentSurveys
+
+    SurveySummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        year:
+          type: integer
+        quarter:
+          type: ["integer", "null"]
+        submittedCount:
+          type: integer
+        startedCount:
+          type: integer
+        totalEligible:
+          type: integer
+        responseRate:
+          type: number
+      required:
+        - id
+        - title
+        - status
+        - year
+        - submittedCount
+        - startedCount
+        - totalEligible
+        - responseRate
+
+    SurveyDashboard:
+      type: object
+      properties:
+        survey:
+          $ref: "#/components/schemas/SurveyCycle"
+        overallResponseRate:
+          type: number
+        submittedCount:
+          type: integer
+        totalEligible:
+          type: integer
+        departmentStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/DepartmentStat"
+        sectionResults:
+          type: array
+          items:
+            $ref: "#/components/schemas/SectionResult"
+      required:
+        - survey
+        - overallResponseRate
+        - submittedCount
+        - totalEligible
+        - departmentStats
+        - sectionResults
+
+    DepartmentStat:
+      type: object
+      properties:
+        departmentId:
+          type: string
+        departmentName:
+          type: string
+        submittedCount:
+          type: integer
+        totalEligible:
+          type: integer
+        responseRate:
+          type: number
+      required:
+        - departmentId
+        - departmentName
+        - submittedCount
+        - totalEligible
+        - responseRate
+
+    SectionResult:
+      type: object
+      properties:
+        sectionId:
+          type: string
+        sectionName:
+          type: string
+        sortOrder:
+          type: integer
+        avgScore:
+          type: ["number", "null"]
+        questionResults:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionResult"
+      required:
+        - sectionId
+        - sectionName
+        - sortOrder
+        - questionResults
+
+    QuestionResult:
+      type: object
+      properties:
+        questionId:
+          type: string
+        questionText:
+          type: string
+        questionNo:
+          type: ["integer", "null"]
+        questionType:
+          type: string
+        avgScore:
+          type: ["number", "null"]
+        responseCount:
+          type: integer
+        distribution:
+          type: object
+          properties:
+            "1":
+              type: integer
+            "2":
+              type: integer
+            "3":
+              type: integer
+            "4":
+              type: integer
+            "5":
+              type: integer
+      required:
+        - questionId
+        - questionText
+        - questionType
+        - responseCount

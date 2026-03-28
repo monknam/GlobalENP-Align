@@ -1,0 +1,2 @@
+-- GlobalENP evaluation seed data
+-- TODO: Add GlobalENP employee and evaluation data here
