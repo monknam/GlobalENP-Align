@@ -1,19 +1,22 @@
 import { useProtectedRoute } from "@/hooks/use-auth";
 import { Shell } from "@/components/layout/Shell";
 import { useGetDashboardOverview } from "@/hooks/use-dashboard";
-import { Users, Building2, ClipboardCheck, ArrowRight, BarChart3, AlertTriangle, Target, Users2, Award, ClipboardList } from "lucide-react";
+import { useGetEvalCycles, useGetEvalInstances } from "@/hooks/use-evaluation";
+import { Users, Building2, ClipboardCheck, ArrowRight, BarChart3, AlertTriangle, Target, Users2, Award, ClipboardList, CheckCircle2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
 const UPCOMING_MODULES = [
   { label: "360 피드백", icon: Users2, description: "구성원 간 상호 피드백" },
-  { label: "성과 운영", icon: Award, description: "정기 성과 점검 및 운영" },
   { label: "OKR 운영", icon: Target, description: "조직 목표 정렬 및 실행 추적" },
 ];
 
 export default function Dashboard() {
   const { isAuthorized, user } = useProtectedRoute();
   const { data: overview, isLoading, error } = useGetDashboardOverview();
+  const { data: evalCycles = [] } = useGetEvalCycles();
+  const activeCycle = evalCycles.find((c) => c.status === "active");
+  const { data: evalInstances = [] } = useGetEvalInstances(activeCycle?.id);
 
   if (!isAuthorized) return null;
 
@@ -91,11 +94,73 @@ export default function Dashboard() {
               <SurveyList surveys={overview.recentSurveys ?? []} role="admin" />
             </div>
 
+            {/* 인사평가 현황 */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-[hsl(var(--neutral-900))] flex items-center gap-2">
+                  <Award className="w-4 h-4 text-[hsl(var(--primary-400))]" />
+                  인사평가 현황
+                </h2>
+                <Link
+                  href="/evaluation"
+                  className="text-xs font-medium text-[hsl(var(--primary-400))] hover:underline flex items-center gap-1"
+                >
+                  평가 관리 <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+              {activeCycle ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45 }}
+                  className="ts-card p-5"
+                >
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">진행 중</span>
+                      <h3 className="font-bold text-[hsl(var(--neutral-900))] mt-1.5">{activeCycle.title}</h3>
+                      <p className="text-xs text-[hsl(var(--neutral-500))] mt-0.5">{activeCycle.year}년</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-2xl font-bold text-[hsl(var(--neutral-900))]">{evalInstances.length}</p>
+                      <p className="text-xs text-[hsl(var(--neutral-500))]">총 평가 인원</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    {[
+                      { label: "자기평가", count: evalInstances.filter((i) => i.workflowStatus === "pending_self").length, color: "text-zinc-600" },
+                      { label: "1차 평가", count: evalInstances.filter((i) => i.workflowStatus === "pending_first").length, color: "text-blue-600" },
+                      { label: "커미티", count: evalInstances.filter((i) => i.workflowStatus === "pending_committee" || i.workflowStatus === "pending_second").length, color: "text-amber-600" },
+                      { label: "확정", count: evalInstances.filter((i) => i.workflowStatus === "confirmed").length, color: "text-emerald-600" },
+                    ].map((s) => (
+                      <div key={s.label} className="bg-[hsl(var(--neutral-50))] rounded-lg py-2.5">
+                        <p className={`text-lg font-bold ${s.color}`}>{s.count}</p>
+                        <p className="text-[10px] text-[hsl(var(--neutral-500))]">{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45 }}
+                  className="ts-card p-8 flex flex-col items-center justify-center text-center"
+                >
+                  <Clock className="w-8 h-8 text-[hsl(var(--neutral-300))] mb-2" />
+                  <p className="text-sm text-[hsl(var(--neutral-500))]">진행 중인 평가 사이클이 없습니다.</p>
+                  <Link href="/evaluation" className="mt-3 text-xs font-medium text-[hsl(var(--primary-400))] hover:underline">
+                    새 사이클 만들기 →
+                  </Link>
+                </motion.div>
+              )}
+            </div>
+
             <div>
               <h2 className="text-base font-bold text-[hsl(var(--neutral-900))] mb-4">사내 확장 예정 모듈</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {UPCOMING_MODULES.map((mod, i) => (
-                  <UpcomingCard key={mod.label} mod={mod} delay={0.5 + i * 0.07} />
+                  <UpcomingCard key={mod.label} mod={mod} delay={0.6 + i * 0.07} />
                 ))}
               </div>
             </div>

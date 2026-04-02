@@ -38,17 +38,19 @@ interface NavSection {
 
 interface ShellProps {
   children: React.ReactNode;
+  /** true이면 인증 없이도 레이아웃 렌더링 (테스트/평가 모드) */
+  guestMode?: boolean;
 }
 
-export function Shell({ children }: ShellProps) {
+export function Shell({ children, guestMode = false }: ShellProps) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-  if (!user) return null;
+  if (!user && !guestMode) return null;
 
-  const isAdmin = user.role === "admin";
-  const isLeader = user.role === "admin" || user.role === "leader";
+  const isAdmin = user?.role === "admin";
+  const isLeader = user?.role === "admin" || user?.role === "leader";
 
   const navSections: NavSection[] = [
     {
@@ -67,8 +69,8 @@ export function Shell({ children }: ShellProps) {
     {
       title: "성과평가",
       items: [
-        { href: "/admin/performance", label: "인사평가 리뷰", icon: Award, show: isAdmin },
-        { href: "#", label: "개인평가", icon: UserCheck, show: isAdmin, comingSoon: true },
+        { href: "/evaluation", label: "인사평가", icon: Award, show: true },
+        { href: "#", label: "개인목표 연계", icon: UserCheck, show: true, comingSoon: true },
       ],
     },
     {
@@ -165,24 +167,33 @@ export function Shell({ children }: ShellProps) {
       </nav>
 
       <div className="px-4 py-5 border-t border-white/10 space-y-2">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/8">
-          <div className="w-9 h-9 rounded-full bg-[hsl(var(--primary-400))] flex items-center justify-center font-bold text-white text-sm shrink-0">
-            {user.fullName?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || "U"}
+        {user ? (
+          <>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/8">
+              <div className="w-9 h-9 rounded-full bg-[hsl(var(--primary-400))] flex items-center justify-center font-bold text-white text-sm shrink-0">
+                {user.fullName?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{user.fullName || "사용자"}</p>
+                <p className="text-xs text-[hsl(var(--neutral-400))] truncate">
+                  {user.role === "admin" ? "관리자" : user.role === "leader" ? "리더" : "구성원"}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => logout()}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[hsl(var(--neutral-400))] hover:text-white hover:bg-white/10 rounded-lg transition-colors font-medium"
+            >
+              <LogOut className="w-4 h-4" />
+              로그아웃
+            </button>
+          </>
+        ) : (
+          <div className="px-4 py-3 rounded-lg bg-amber-500/20">
+            <p className="text-xs font-semibold text-amber-300">테스트 모드</p>
+            <p className="text-[10px] text-amber-400/80 mt-0.5">로그인 없이 평가 기능을 테스트 중</p>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{user.fullName || "사용자"}</p>
-            <p className="text-xs text-[hsl(var(--neutral-400))] truncate">
-              {user.role === "admin" ? "관리자" : user.role === "leader" ? "리더" : "구성원"}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => logout()}
-          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[hsl(var(--neutral-400))] hover:text-white hover:bg-white/10 rounded-lg transition-colors font-medium"
-        >
-          <LogOut className="w-4 h-4" />
-          로그아웃
-        </button>
+        )}
       </div>
     </div>
   );

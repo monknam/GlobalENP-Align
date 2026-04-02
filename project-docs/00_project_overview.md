@@ -2,43 +2,37 @@
 
 ## Project
 
-Thingspire Flow is a modular HR and organizational operations system.
+**GlobalENP Align** is a modular HR and organizational operations system built for 글로벌이앤피 (GlobalENP), a fire suppression systems company.
 
-At the current implementation stage, the survey module is the most developed part, but survey is only one functional area inside the larger product.
+The system is designed to support: organizational culture surveys, performance evaluation, goal alignment, and task management — as separate modules within one integrated platform.
 
-## Current Direction
+## Active Modules
 
-The project initially used Express, session auth, and local PostgreSQL.
+- **인사평가 (Performance Evaluation)** — multi-step workflow: 자기평가 → 1차 상사평가 → (2차 상사평가) → 커미티 확정
+- **조직진단 설문 (Org Culture Survey)** — previously the primary module
 
-The active migration target is:
+## Tech Stack
 
-- GitHub as the source repository
-- Vercel for deployment
-- Supabase Auth for authentication
-- Supabase Postgres for database hosting
+- Frontend: React 19 + Vite, TanStack Query, Tailwind CSS, shadcn/ui, Wouter routing
+- Auth: Supabase Auth (employee emails pending — test mode via localStorage actor)
+- Database: Supabase PostgreSQL
+- Deployment: Vercel
 
-## Current Codebase Shape
+## Codebase Shape
 
-- Frontend: `artifacts/thingspire-flow`
-- Legacy API server: `artifacts/api-server`
-- Shared DB schema: `lib/db`
-- Generated API clients/spec: `lib/api-client-react`, `lib/api-spec`, `lib/api-zod`
+- Frontend: `artifacts/globalenp-align/src/`
+  - `pages/evaluation/` — 인사평가 모듈
+  - `pages/surveys/` — 조직진단 설문
+  - `hooks/use-evaluation.ts` — 평가 워크플로우 훅
+  - `components/layout/Shell.tsx` — 사이드바 레이아웃 (guestMode 지원)
+- Migrations: `supabase/migrations/`
 
-## Important Strategy
+## Employee Data
 
-- Keep the current React + Vite app for the first migration pass
-- Do not keep Express session auth
-- Introduce Supabase Auth and a `profiles`-style app user model
-- Keep product structure modular so future HR modules remain separable
-- Keep product structure modular so future HR modules remain separable
-- Avoid naming or information architecture that frames the whole system as survey-only
-
-## Core Reference Docs
-
-- `MIGRATION_PLAN.md`
-- `SUPABASE_AUTH_MIGRATION.md`
-- `project-docs/04_product_vision.md`
+48명 시드 데이터 적재 완료 (6개 부서 + 임원):
+- 개발생산부, 커미셔닝/현장관리부, 연구설계부, 영업행정관리부, 경영지원부, 연구개발부
 
 ## Working Assumption
 
-Do not combine architecture migration and unrelated feature expansion in the same pass.
+- 직원 이메일 미확보 → Supabase Auth 연결 전까지 localStorage 테스트 액터로 운영
+- 새 기능은 독립적인 모듈로 추가 (기존 설문 모듈 영향 없음)

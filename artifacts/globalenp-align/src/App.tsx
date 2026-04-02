@@ -17,6 +17,9 @@ import ResultsDashboard from "@/pages/results/dashboard";
 import RoleSelect from "@/pages/role-select";
 import PerformanceList from "@/pages/admin/performance/index";
 import PerformanceDetail from "@/pages/admin/performance/detail";
+import EvaluationIndex from "@/pages/evaluation/index";
+import EvaluationForm from "@/pages/evaluation/form";
+import CommitteeReview from "@/pages/evaluation/committee";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +51,12 @@ function Router() {
       <Route path="/admin/performance" component={PerformanceList} />
       <Route path="/admin/performance/:cycleId" component={PerformanceList} />
       <Route path="/admin/performance/:cycleId/:evalId" component={PerformanceDetail} />
+
+      {/* 인사평가 (GlobalENP) */}
+      <Route path="/evaluation" component={EvaluationIndex} />
+      <Route path="/evaluation/:cycleId" component={EvaluationIndex} />
+      <Route path="/evaluation/form/:instanceId/:step" component={EvaluationForm} />
+      <Route path="/evaluation/:cycleId/:instanceId/committee" component={CommitteeReview} />
 
       <Route component={NotFound} />
     </Switch>

@@ -1,5 +1,72 @@
 # Work Log
 
+## 2026-04-02 (Session 6) — GlobalENP 인사평가 시스템 구축
+
+### Completed
+
+- **프로젝트 전환**: Thingspire Flow → GlobalENP Align
+  - 회사명 변경 및 평가 시스템 신규 설계
+  - 기존 Thingspire 평가 테이블 DROP CASCADE 후 재설계
+
+- **DB 마이그레이션 3종** (`supabase/migrations/2026040200000{1,2,3}_*.sql`)
+  - `000001_evaluation_workflow.sql`: employees, eval_cycles, eval_items, eval_instances, eval_assignments, eval_submissions, eval_scores, eval_final_results 테이블 생성 + RLS (dev: USING true)
+  - `000002_eval_items_seed.sql`: 평가 항목 14개 — 공통 2개(책임감·성실성, 협업·소통) + 직군별 3개씩(manufacturing/field/technical/admin), 5단계 행동지표 포함
+  - `000003_globalenp_employees.sql`: 글로벌이앤피 직원 48명 시드 (6개 부서 + 임원/기타) + supervisor_id 연결
+
+- **Frontend: 인사평가 모듈 신규 구축** (`artifacts/globalenp-align/src/`)
+  - `hooks/use-evaluation.ts`: 전체 평가 워크플로우 훅 (Employee/EvalCycle/EvalItem/EvalInstance/EvalSubmission/EvalScore/EvalFinalResult 타입 + Supabase 쿼리 13종)
+    - localStorage 기반 테스트 액터 (`eval_test_actor_id`)
+    - `useCreateCycleInstances`: 사이클 활성화 + 인스턴스/배정 일괄 생성
+    - `useSaveEvaluation`: 제출+점수 upsert + 워크플로우 자동 진행
+    - `useConfirmEvaluation`: final_results 저장 + 상태 confirmed 전환
+  - `pages/evaluation/index.tsx`: 평가 관리 메인 — 사이클 목록/상세, 인스턴스 테이블, TestActorSelector 배너, 워크플로우 배지
+  - `pages/evaluation/form.tsx`: 평가 작성 폼 — 항목별 점수 선택(5단계 컬러 코딩), 행동지표 토글, 사례 기재란, 자동 워크플로우 진행
+  - `pages/evaluation/committee.tsx`: 커미티 리뷰 — 단계별 점수 비교(self/first/second), 2차 평가자 배정, 최종 등급(S/A/B/C/D) 확정
+  - `App.tsx`: `/evaluation`, `/evaluation/:cycleId`, `/evaluation/form/:instanceId/:step`, `/evaluation/:cycleId/:instanceId/committee` 라우트 추가
+  - `components/layout/Shell.tsx`: 성과평가 섹션 → "인사평가" (`/evaluation`, 전체 공개)
+
+### Workflow State Machine
+
+```
+pending_self → pending_first → pending_committee ↔ pending_second → confirmed
+```
+- 자기평가 제출 → pending_first
+- 1차/2차 평가 제출 → pending_committee
+- 커미티에서 2차 요청 → pending_second
+- 커미티 최종 확정 → confirmed
+
+### 직군 구성
+
+| job_group | 부서 |
+|---|---|
+| manufacturing | 개발생산부 |
+| field | 커미셔닝/현장관리부 |
+| technical | 연구설계부, 연구개발부 |
+| admin | 영업행정관리부, 경영지원부 |
+| executive | 임원/기타 (평가 제외) |
+
+### 테스트 방법
+
+1. Supabase에 migration 3개 실행 (`supabase db push --linked`)
+2. `/evaluation` 접속
+3. 상단 "테스트 액터" 배너에서 직원 선택
+4. 평가 사이클 생성 → 활성화 → 자기평가 작성
+
+### Remaining Issues
+
+- Supabase migration 3개 아직 실행 전 (로컬 실행 필요)
+- 로그인/인증 연결 미완료 (이메일 정보 없음 → localStorage 테스트 액터로 임시 운영)
+- 커미티 페이지의 평균 점수 자동 계산 미구현 (scoreSelfAvg 등 null 저장 중)
+- 실제 사용자 이메일 확보 후 Supabase Auth 연결 필요
+
+### Recommended Next Task
+
+1. `supabase db push --linked` 실행하여 migration 적용
+2. `/evaluation` 페이지 E2E 테스트 (사이클 생성 → 활성화 → 자기평가 → 1차평가 → 커미티 확정)
+3. 커미티 페이지 점수 평균 자동 계산 (useGetScores 병렬 fetch + avg 계산 후 useConfirmEvaluation에 전달)
+
+---
+
 ## 2026-03-24 (Session 5)
 
 ### Completed
