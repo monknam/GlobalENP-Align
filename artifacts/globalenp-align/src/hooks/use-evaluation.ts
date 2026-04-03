@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -112,6 +113,33 @@ export function getTestActorId(): string | null {
 export function setTestActorId(id: string | null) {
   if (id) localStorage.setItem(ACTOR_KEY, id);
   else localStorage.removeItem(ACTOR_KEY);
+}
+
+/**
+ * 현재 로그인한 사용자의 employee ID를 반환합니다.
+ * - Supabase 연결 시: profile_id = auth.uid() 인 employee 자동 조회
+ * - 미연결 시: localStorage eval_test_actor_id 폴백
+ */
+export function useMyEmployeeId(): string | null {
+  const { user } = useAuth();
+
+  const { data: employeeId = null } = useQuery({
+    queryKey: ["my_employee_id", user?.id],
+    enabled: !!supabase && !!user?.id,
+    staleTime: 10 * 60 * 1000,
+    queryFn: async () => {
+      if (!supabase || !user?.id) return null;
+      const { data } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("profile_id", user.id)
+        .maybeSingle();
+      return (data as { id: string } | null)?.id ?? null;
+    },
+  });
+
+  // Supabase 연결 + 매칭 employee 있으면 사용, 없으면 localStorage 폴백
+  return employeeId ?? getTestActorId();
 }
 
 // ── Mappers ────────────────────────────────────────────────────────────────

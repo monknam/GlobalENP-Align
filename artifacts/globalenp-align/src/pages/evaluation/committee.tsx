@@ -10,7 +10,7 @@ import {
   useGetEmployees,
   useConfirmEvaluation,
   useRequestSecondEval,
-  getTestActorId,
+  useMyEmployeeId,
   type EvalItem,
   type EvalSubmission,
   type EvalScore,
@@ -182,7 +182,7 @@ export default function CommitteePage() {
   const { toast } = useToast();
 
   const instanceId = params.instanceId;
-  const actorId = getTestActorId();
+  const actorId = useMyEmployeeId();
 
   const { data: instance, isLoading: instLoading } = useGetEvalInstance(instanceId);
   const { data: submissions = [] } = useGetSubmissions(instanceId);

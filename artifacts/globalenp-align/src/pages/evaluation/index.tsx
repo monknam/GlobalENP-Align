@@ -12,6 +12,7 @@ import {
   useGetMyPendingEvals,
   getTestActorId,
   setTestActorId,
+  useMyEmployeeId,
   type WorkflowStatus,
   type EvalInstance,
 } from "@/hooks/use-evaluation";
@@ -606,7 +607,7 @@ export default function EvaluationPage() {
 // 실제 eval_assignments 기반으로 내가 평가해야 할 인스턴스만 표시
 
 function MyEvalSection() {
-  const actorId = getTestActorId();
+  const actorId = useMyEmployeeId();
   const { data: cycles = [] } = useGetEvalCycles();
   const activeCycle = cycles.find((c) => c.status === "active");
   const { data: allInstances = [] } = useGetEvalInstances(activeCycle?.id);

@@ -8,7 +8,7 @@ import {
   useGetScores,
   useSaveEvaluation,
   useGetEmployee,
-  getTestActorId,
+  useMyEmployeeId,
   type EvalItem,
   type EvalSubmission,
   type Employee,
@@ -201,7 +201,7 @@ export default function EvaluationFormPage() {
 
   const step = params.step as EvalSubmission["step"];
   const instanceId = params.instanceId;
-  const actorId = getTestActorId();
+  const actorId = useMyEmployeeId();
 
   const { data: instance, isLoading: instLoading } = useGetEvalInstance(instanceId);
   const { data: actor } = useGetEmployee(actorId);
