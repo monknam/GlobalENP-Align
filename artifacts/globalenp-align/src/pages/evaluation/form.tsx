@@ -273,7 +273,7 @@ export default function EvaluationFormPage() {
         title: submit ? "평가 제출 완료" : "임시 저장 완료",
         description: submit ? "다음 단계로 진행됩니다." : undefined,
       });
-      if (submit) navigate("/evaluation");
+      if (submit) navigate(instance?.cycleId ? `/evaluation/${instance.cycleId}` : "/evaluation");
     } catch {
       toast({ title: "오류가 발생했습니다", variant: "destructive" });
     }

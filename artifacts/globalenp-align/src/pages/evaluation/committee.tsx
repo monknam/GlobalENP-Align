@@ -246,18 +246,15 @@ export default function CommitteePage() {
       return;
     }
 
-    // 평균 계산 헬퍼 (점수 데이터는 이미 화면에 로드돼 있으나
-    //  여기선 submissions의 submittedAt 기준으로 단순 null 처리)
     try {
       await confirm.mutateAsync({
         instanceId,
         finalGrade,
         committeeComment,
         confirmedBy: actorId,
-        scoreSelfAvg: null,
-        scoreFirstAvg: null,
-        scoreSecondAvg: null,
-        finalScore: null,
+        selfSubmissionId: selfSub?.id ?? null,
+        firstSubmissionId: firstSub?.id ?? null,
+        secondSubmissionId: secondSub?.id ?? null,
       });
       toast({ title: "평가 확정 완료", description: "최종 결과가 저장되었습니다." });
       navigate(`/evaluation/${params.cycleId}`);

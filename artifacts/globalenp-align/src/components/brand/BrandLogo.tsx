@@ -10,17 +10,17 @@ interface BrandLogoProps {
 
 export function BrandLogo({
   className,
-  wordmarkClassName,
   captionClassName,
   showCaption = false,
   compact = false,
 }: BrandLogoProps) {
   return (
     <div className={cn("inline-flex items-center", compact ? "gap-2" : "gap-3", className)}>
-      <div className="inline-flex items-end leading-none font-black tracking-[-0.06em]">
-        <span className={cn("text-[#00B5E2]", compact ? "text-xl" : "text-2xl", wordmarkClassName)}>Global</span>
-        <span className={cn("text-[#FF9E1B]", compact ? "text-xl" : "text-2xl", wordmarkClassName)}>ENP</span>
-      </div>
+      <img
+        src="/images/globalenp-logo.png"
+        alt="Global ENP"
+        className={cn(compact ? "h-7" : "h-8", "w-auto object-contain")}
+      />
       {showCaption ? (
         <span
           className={cn(

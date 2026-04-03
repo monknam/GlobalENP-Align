@@ -16,10 +16,13 @@
 - employees 테이블 + 48명 시드 (supervisor_id 연결)
 - 평가 워크플로우 전체 테이블 설계 + RLS (dev: USING true)
 - 평가 항목 14개 (행동지표 5단계 포함)
-- 평가 관리 페이지 (`/evaluation`)
+- 평가 관리 페이지 (`/evaluation`) — 사이클 관리 + 인스턴스 테이블
 - 평가 작성 폼 (`/evaluation/form/:instanceId/:step`)
 - 커미티 리뷰 페이지 (`/evaluation/:cycleId/:instanceId/committee`)
+- 평가 결과 보기 페이지 (`/evaluation/:cycleId/:instanceId/result`)
 - Shell guestMode (인증 없이 평가 페이지 접근)
+- CycleDetail 액션 버튼 워크플로우 상태별 분기
+- useConfirmEvaluation 평균 점수 자동 계산 (DB에서 직접 fetch + 평균 산출)
 
 ## Not In Scope Right Now
 

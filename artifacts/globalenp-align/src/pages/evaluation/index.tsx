@@ -1,15 +1,19 @@
 import React from "react";
 import { Link, useParams } from "wouter";
 import { Shell } from "@/components/layout/Shell";
+import { hasSupabaseEnv } from "@/lib/supabase";
 import {
   useGetEvalCycles,
   useCreateEvalCycle,
   useCreateCycleInstances,
+  useUpdateCycleStatus,
   useGetEvalInstances,
   useGetEmployees,
+  useGetMyPendingEvals,
   getTestActorId,
   setTestActorId,
   type WorkflowStatus,
+  type EvalInstance,
 } from "@/hooks/use-evaluation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,6 +76,10 @@ function CreateCycleDialog({ onCreated }: { onCreated: (id: string) => void }) {
   const [open, setOpen] = React.useState(false);
   const [title, setTitle] = React.useState("");
   const [year, setYear] = React.useState(String(new Date().getFullYear()));
+  const [selfStart, setSelfStart] = React.useState("");
+  const [selfEnd, setSelfEnd] = React.useState("");
+  const [firstStart, setFirstStart] = React.useState("");
+  const [firstEnd, setFirstEnd] = React.useState("");
   const create = useCreateEvalCycle();
   const { toast } = useToast();
 
@@ -79,9 +87,16 @@ function CreateCycleDialog({ onCreated }: { onCreated: (id: string) => void }) {
     e.preventDefault();
     if (!title.trim()) return;
     try {
-      const cycle = await create.mutateAsync({ title: title.trim(), year: Number(year) });
+      const cycle = await create.mutateAsync({
+        title: title.trim(),
+        year: Number(year),
+        selfEvalStart: selfStart || undefined,
+        selfEvalEnd: selfEnd || undefined,
+        firstEvalStart: firstStart || undefined,
+        firstEvalEnd: firstEnd || undefined,
+      });
       setOpen(false);
-      setTitle("");
+      setTitle(""); setSelfStart(""); setSelfEnd(""); setFirstStart(""); setFirstEnd("");
       onCreated(cycle.id);
       toast({ title: "평가 사이클 생성 완료" });
     } catch {
@@ -97,13 +112,13 @@ function CreateCycleDialog({ onCreated }: { onCreated: (id: string) => void }) {
           새 평가 사이클
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>평가 사이클 생성</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label>사이클 명칭</Label>
+            <Label>사이클 명칭 <span className="text-red-500">*</span></Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -112,7 +127,7 @@ function CreateCycleDialog({ onCreated }: { onCreated: (id: string) => void }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label>연도</Label>
+            <Label>연도 <span className="text-red-500">*</span></Label>
             <Input
               type="number"
               value={year}
@@ -121,6 +136,24 @@ function CreateCycleDialog({ onCreated }: { onCreated: (id: string) => void }) {
               max={2030}
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-zinc-500 text-xs font-semibold uppercase tracking-wide">
+              자기평가 기간 <span className="font-normal normal-case">(선택)</span>
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Input type="date" value={selfStart} onChange={(e) => setSelfStart(e.target.value)} />
+              <Input type="date" value={selfEnd} onChange={(e) => setSelfEnd(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-zinc-500 text-xs font-semibold uppercase tracking-wide">
+              상사평가 기간 <span className="font-normal normal-case">(선택)</span>
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Input type="date" value={firstStart} onChange={(e) => setFirstStart(e.target.value)} />
+              <Input type="date" value={firstEnd} onChange={(e) => setFirstEnd(e.target.value)} />
+            </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
@@ -173,13 +206,99 @@ function TestActorSelector() {
   );
 }
 
+// ── 인스턴스 행 (공통) ────────────────────────────────────────
+
+function InstanceRow({ inst: i, cycleId }: { inst: EvalInstance; cycleId: string }) {
+  return (
+    <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-zinc-50 transition-colors">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sm text-zinc-900">{i.employeeName}</span>
+          <span className="text-xs text-zinc-400">{i.jobTitle}</span>
+        </div>
+      </div>
+      <WorkflowBadge status={i.workflowStatus} />
+      {(i.workflowStatus === "pending_committee" || i.workflowStatus === "pending_second") && (
+        <Link href={`/evaluation/${cycleId}/${i.id}/committee`}>
+          <Button variant="ghost" size="sm" className="text-xs h-7">
+            커미티 검토 <ChevronRight className="w-3.5 h-3.5 ml-1" />
+          </Button>
+        </Link>
+      )}
+      {i.workflowStatus === "confirmed" && (
+        <Link href={`/evaluation/${cycleId}/${i.id}/result`}>
+          <Button variant="ghost" size="sm" className="text-xs h-7 text-green-600">
+            결과 보기 <ChevronRight className="w-3.5 h-3.5 ml-1" />
+          </Button>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+// ── 단순 목록 ──────────────────────────────────────────────────
+
+function InstanceListFlat({ instances, cycleId }: { instances: EvalInstance[]; cycleId: string }) {
+  return (
+    <div className="bg-white rounded-xl border divide-y">
+      {instances.map((inst) => (
+        <InstanceRow key={inst.id} inst={inst} cycleId={cycleId} />
+      ))}
+    </div>
+  );
+}
+
+// ── 부서별 그룹 목록 ───────────────────────────────────────────
+
+function InstanceListGrouped({ instances, cycleId }: { instances: EvalInstance[]; cycleId: string }) {
+  const groups = instances.reduce<Record<string, EvalInstance[]>>(
+    (acc, inst) => {
+      const dept = inst.department ?? "기타";
+      if (!acc[dept]) acc[dept] = [];
+      acc[dept].push(inst);
+      return acc;
+    },
+    {}
+  );
+  const depts = Object.keys(groups).sort();
+
+  return (
+    <div className="space-y-3">
+      {depts.map((dept) => {
+        const deptInstances = groups[dept];
+        const confirmedInDept = deptInstances.filter((i) => i.workflowStatus === "confirmed").length;
+        return (
+          <div key={dept} className="bg-white rounded-xl border overflow-hidden">
+            <div className="px-5 py-2.5 bg-zinc-50 border-b flex items-center justify-between">
+              <span className="text-xs font-semibold text-zinc-700">{dept}</span>
+              <span className="text-xs text-zinc-400">
+                {confirmedInDept}/{deptInstances.length} 확정
+              </span>
+            </div>
+            <div className="divide-y">
+              {deptInstances.map((inst) => (
+                <InstanceRow key={inst.id} inst={inst} cycleId={cycleId} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── 사이클 상세: 인스턴스 목록 ────────────────────────────────
 
 function CycleDetail({ cycleId }: { cycleId: string }) {
   const { data: cycles = [] } = useGetEvalCycles();
   const { data: instances = [], isLoading } = useGetEvalInstances(cycleId);
   const createInstances = useCreateCycleInstances();
+  const updateStatus = useUpdateCycleStatus();
   const { toast } = useToast();
+
+  const [search, setSearch] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState<WorkflowStatus | "all">("all");
+  const [groupByDept, setGroupByDept] = React.useState(false);
 
   const cycle = cycles.find((c) => c.id === cycleId);
   if (!cycle) return null;
@@ -192,6 +311,19 @@ function CycleDetail({ cycleId }: { cycleId: string }) {
     {} as Record<string, number>
   );
 
+  const allConfirmed =
+    instances.length > 0 && instances.every((i) => i.workflowStatus === "confirmed");
+
+  const filtered = instances.filter((inst) => {
+    const matchSearch =
+      !search ||
+      inst.employeeName?.toLowerCase().includes(search.toLowerCase()) ||
+      inst.department?.toLowerCase().includes(search.toLowerCase()) ||
+      inst.jobTitle?.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || inst.workflowStatus === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
   const handleActivate = async () => {
     try {
       await createInstances.mutateAsync(cycleId);
@@ -201,30 +333,143 @@ function CycleDetail({ cycleId }: { cycleId: string }) {
     }
   };
 
+  const handleClose = async () => {
+    try {
+      await updateStatus.mutateAsync({ id: cycleId, status: "closed" });
+      toast({ title: "사이클 종료 완료", description: "인사평가 사이클이 마감되었습니다." });
+    } catch {
+      toast({ title: "오류", variant: "destructive" });
+    }
+  };
+
+  const confirmedCount = statusCounts["confirmed"] ?? 0;
+  const progressPct = instances.length > 0 ? Math.round((confirmedCount / instances.length) * 100) : 0;
+
+  const fmtDate = (d: string | null) =>
+    d ? new Date(d).toLocaleDateString("ko-KR", { month: "short", day: "numeric" }) : null;
+
   return (
     <div className="space-y-4">
       {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
           <h2 className="text-lg font-bold text-zinc-900">{cycle.title}</h2>
-          <p className="text-sm text-zinc-500">{cycle.year}년 · {instances.length}명</p>
+          <p className="text-sm text-zinc-500 mt-0.5">{cycle.year}년 · {instances.length}명</p>
+
+          {/* 일정 표시 */}
+          {(cycle.selfEvalStart || cycle.firstEvalStart) && (
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
+              {cycle.selfEvalStart && (
+                <span className="text-xs text-zinc-400">
+                  자기평가: {fmtDate(cycle.selfEvalStart)}
+                  {cycle.selfEvalEnd ? ` ~ ${fmtDate(cycle.selfEvalEnd)}` : ""}
+                </span>
+              )}
+              {cycle.firstEvalStart && (
+                <span className="text-xs text-zinc-400">
+                  상사평가: {fmtDate(cycle.firstEvalStart)}
+                  {cycle.firstEvalEnd ? ` ~ ${fmtDate(cycle.firstEvalEnd)}` : ""}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* 진행률 바 */}
+          {instances.length > 0 && (
+            <div className="mt-3 space-y-1">
+              <div className="flex items-center justify-between text-xs text-zinc-500">
+                <span>확정 완료</span>
+                <span className="font-semibold text-zinc-700">{confirmedCount}/{instances.length} ({progressPct}%)</span>
+              </div>
+              <div className="w-full bg-zinc-100 rounded-full h-1.5">
+                <div
+                  className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
-        {cycle.status === "draft" && instances.length === 0 && (
-          <Button onClick={handleActivate} disabled={createInstances.isPending}>
-            {createInstances.isPending ? "생성 중..." : "평가 시작 (전 직원 인스턴스 생성)"}
-          </Button>
-        )}
+
+        <div className="flex items-center gap-2 shrink-0">
+          {cycle.status === "draft" && instances.length === 0 && (
+            <Button onClick={handleActivate} disabled={createInstances.isPending}>
+              {createInstances.isPending ? "생성 중..." : "평가 시작 (전 직원 인스턴스 생성)"}
+            </Button>
+          )}
+          {cycle.status === "active" && allConfirmed && (
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={updateStatus.isPending}
+              className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              {updateStatus.isPending ? "처리 중..." : "사이클 종료"}
+            </Button>
+          )}
+          {cycle.status === "closed" && (
+            <span className="text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-full border">
+              마감 완료
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* 요약 통계 */}
+      {/* 요약 통계 (클릭해서 필터) */}
       {instances.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {(["pending_self","pending_first","pending_committee","pending_second","confirmed"] as WorkflowStatus[]).map((s) => (
-            <div key={s} className="bg-white rounded-lg border px-3 py-2">
-              <p className="text-xs text-zinc-500">{STATUS_LABEL[s]}</p>
-              <p className="text-xl font-bold text-zinc-900">{statusCounts[s] ?? 0}</p>
-            </div>
+            <button
+              key={s}
+              onClick={() => setStatusFilter(statusFilter === s ? "all" : s)}
+              className={`text-left rounded-lg border px-3 py-2 transition-colors ${
+                statusFilter === s
+                  ? "border-zinc-400 bg-zinc-900 text-white"
+                  : "bg-white hover:bg-zinc-50"
+              }`}
+            >
+              <p className={`text-xs ${statusFilter === s ? "text-zinc-300" : "text-zinc-500"}`}>
+                {STATUS_LABEL[s]}
+              </p>
+              <p className={`text-xl font-bold ${statusFilter === s ? "text-white" : "text-zinc-900"}`}>
+                {statusCounts[s] ?? 0}
+              </p>
+            </button>
           ))}
+        </div>
+      )}
+
+      {/* 검색 + 필터 바 */}
+      {instances.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            placeholder="이름, 부서, 직책으로 검색..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8 text-sm max-w-xs"
+          />
+          <button
+            onClick={() => setGroupByDept((v) => !v)}
+            className={`text-xs px-2.5 py-1 rounded border transition-colors ${
+              groupByDept
+                ? "border-zinc-400 bg-zinc-800 text-white"
+                : "border-zinc-200 text-zinc-500 hover:bg-zinc-50"
+            }`}
+          >
+            부서별 보기
+          </button>
+          {statusFilter !== "all" && (
+            <button
+              onClick={() => setStatusFilter("all")}
+              className="text-xs text-zinc-500 hover:text-zinc-800 px-2 py-1 rounded border border-zinc-200 hover:bg-zinc-50"
+            >
+              필터 초기화
+            </button>
+          )}
+          {(search || statusFilter !== "all") && (
+            <span className="text-xs text-zinc-400">{filtered.length}명 표시</span>
+          )}
         </div>
       )}
 
@@ -236,32 +481,17 @@ function CycleDetail({ cycleId }: { cycleId: string }) {
           <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
           <p className="text-sm">평가 대상자가 없습니다. 평가를 시작하세요.</p>
         </div>
-      ) : (
-        <div className="bg-white rounded-xl border divide-y">
-          {instances.map((inst) => (
-            <div key={inst.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-zinc-50 transition-colors">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm text-zinc-900">{inst.employeeName}</span>
-                  <span className="text-xs text-zinc-400">{inst.jobTitle}</span>
-                </div>
-                <p className="text-xs text-zinc-500 mt-0.5">{inst.department}</p>
-              </div>
-              <WorkflowBadge status={inst.workflowStatus} />
-              {inst.workflowStatus !== "confirmed" && (
-                <Link href={`/evaluation/${cycleId}/${inst.id}/committee`}>
-                  <Button variant="ghost" size="sm" className="text-xs h-7">
-                    커미티 검토
-                    <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </Link>
-              )}
-              {inst.workflowStatus === "confirmed" && (
-                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-              )}
-            </div>
-          ))}
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-8 text-zinc-400">
+          <AlertCircle className="w-6 h-6 mx-auto mb-2 opacity-30" />
+          <p className="text-sm">검색 조건에 맞는 결과가 없습니다.</p>
         </div>
+      ) : groupByDept ? (
+        // ── 부서별 그룹 뷰 ──
+        <InstanceListGrouped instances={filtered} cycleId={cycleId} />
+      ) : (
+        // ── 단순 목록 뷰 ──
+        <InstanceListFlat instances={filtered} cycleId={cycleId} />
       )}
     </div>
   );
@@ -292,6 +522,21 @@ export default function EvaluationPage() {
   return (
     <Shell guestMode>
     <div className="space-y-6">
+      {/* Supabase 미연결 안내 */}
+      {!hasSupabaseEnv && (
+        <div className="flex items-start gap-3 px-4 py-3.5 bg-red-50 border border-red-200 rounded-xl text-sm">
+          <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-red-700">Supabase 연결이 필요합니다</p>
+            <p className="text-red-600 mt-0.5 text-xs leading-relaxed">
+              프로젝트 루트에 <code className="bg-red-100 px-1 rounded">.env.local</code> 파일을 만들고{" "}
+              <code className="bg-red-100 px-1 rounded">VITE_SUPABASE_URL</code> 과{" "}
+              <code className="bg-red-100 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> 를 설정한 뒤,{" "}
+              <code className="bg-red-100 px-1 rounded">supabase db push --linked</code> 로 마이그레이션을 적용하세요.
+            </p>
+          </div>
+        </div>
+      )}
       {/* 페이지 헤더 */}
       <div className="flex items-center justify-between">
         <div>
@@ -358,38 +603,45 @@ export default function EvaluationPage() {
 }
 
 // ── 내 평가 현황 (테스트 모드) ────────────────────────────────
+// 실제 eval_assignments 기반으로 내가 평가해야 할 인스턴스만 표시
 
 function MyEvalSection() {
   const actorId = getTestActorId();
   const { data: cycles = [] } = useGetEvalCycles();
   const activeCycle = cycles.find((c) => c.status === "active");
-  const { data: instances = [] } = useGetEvalInstances(activeCycle?.id);
+  const { data: allInstances = [] } = useGetEvalInstances(activeCycle?.id);
+  // assignment 기반: 내가 평가자로 배정된 인스턴스 (first/second)
+  const { data: assignedInstances = [] } = useGetMyPendingEvals(actorId, activeCycle?.id);
 
   if (!actorId || !activeCycle) return null;
 
-  // 내 평가 인스턴스
-  const myInstance = instances.find((i) => i.employeeId === actorId);
-  // 내가 평가해야 할 인스턴스 (1차 상사인 경우)
-  // — 여기서는 단순 표시만. 실제 상사 배정은 eval_assignments 기준
-  const pendingForMe = instances.filter(
+  // 내 자기평가 인스턴스
+  const myInstance = allInstances.find((i) => i.employeeId === actorId);
+  // 실제 배정된 평가 대상 중 아직 pending인 것만
+  const pendingForMe = assignedInstances.filter(
     (i) => i.workflowStatus === "pending_first" || i.workflowStatus === "pending_second"
   );
 
   return (
-    <div className="space-y-3 pt-2 border-t">
-      <h2 className="text-base font-semibold text-zinc-700">내 평가 현황 (테스트)</h2>
+    <div className="space-y-3 pt-2 border-t border-zinc-100">
+      <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">내 평가 현황</h2>
 
       {myInstance && (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">내 평가 진행 상태</CardTitle>
+          <CardHeader className="pb-2 pt-4">
+            <CardTitle className="text-sm font-medium text-zinc-600">내 자기평가</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
+          <CardContent className="pb-4">
+            <div className="flex items-center justify-between gap-3">
               <WorkflowBadge status={myInstance.workflowStatus} />
               {myInstance.workflowStatus === "pending_self" && (
                 <Link href={`/evaluation/form/${myInstance.id}/self`}>
                   <Button size="sm">자기평가 작성하기</Button>
+                </Link>
+              )}
+              {myInstance.workflowStatus === "confirmed" && (
+                <Link href={`/evaluation/${activeCycle.id}/${myInstance.id}/result`}>
+                  <Button variant="outline" size="sm">결과 보기</Button>
                 </Link>
               )}
             </div>
@@ -399,27 +651,34 @@ function MyEvalSection() {
 
       {pendingForMe.length > 0 && (
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 pt-4">
             <CardTitle className="text-sm font-medium text-zinc-600">
-              평가 대기 직원 ({pendingForMe.length}명)
+              상사 평가 대기 ({pendingForMe.length}명)
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {pendingForMe.slice(0, 5).map((inst) => (
-              <div key={inst.id} className="flex items-center justify-between py-1">
-                <div>
-                  <span className="text-sm font-medium text-zinc-800">{inst.employeeName}</span>
-                  <span className="text-xs text-zinc-400 ml-2">{inst.department}</span>
+          <CardContent className="pb-4 space-y-2">
+            {pendingForMe.map((inst) => {
+              const step = inst.workflowStatus === "pending_second" ? "second" : "first";
+              return (
+                <div key={inst.id} className="flex items-center justify-between py-1.5 border-b border-zinc-50 last:border-0">
+                  <div>
+                    <span className="text-sm font-medium text-zinc-800">{inst.employeeName}</span>
+                    <span className="text-xs text-zinc-400 ml-2">{inst.department}</span>
+                  </div>
+                  <Link href={`/evaluation/form/${inst.id}/${step}`}>
+                    <Button variant="outline" size="sm" className="text-xs h-7">
+                      {step === "second" ? "2차 평가 작성" : "1차 평가 작성"}
+                    </Button>
+                  </Link>
                 </div>
-                <Link href={`/evaluation/form/${inst.id}/${inst.workflowStatus === "pending_second" ? "second" : "first"}`}>
-                  <Button variant="outline" size="sm" className="text-xs h-7">
-                    평가 작성
-                  </Button>
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
+      )}
+
+      {!myInstance && pendingForMe.length === 0 && (
+        <p className="text-sm text-zinc-400 py-4 text-center">진행 중인 평가가 없습니다.</p>
       )}
     </div>
   );

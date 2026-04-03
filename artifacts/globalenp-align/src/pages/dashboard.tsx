@@ -170,6 +170,32 @@ export default function Dashboard() {
         {/* ── Member / Leader 뷰 ───────────────────── */}
         {!isLoading && !error && overview && !isAdmin && (
           <>
+            {/* 인사평가 바로가기 (활성 사이클 있을 때) */}
+            {activeCycle && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="ts-card p-5 flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                    <Award className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[hsl(var(--neutral-900))]">{activeCycle.title}</p>
+                    <p className="text-xs text-[hsl(var(--neutral-500))] mt-0.5">인사평가 진행 중 · {activeCycle.year}년</p>
+                  </div>
+                </div>
+                <Link
+                  href="/evaluation"
+                  className="ts-btn-primary flex items-center gap-2 px-4 py-2 text-sm shrink-0"
+                >
+                  평가 바로가기 <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </motion.div>
+            )}
+
             {activeSurveys.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}

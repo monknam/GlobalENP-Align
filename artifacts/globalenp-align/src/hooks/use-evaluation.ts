@@ -670,6 +670,19 @@ export function useGetFinalResult(instanceId: string | undefined) {
   });
 }
 
+// 제출 ID 목록으로 평균 점수 계산 헬퍼
+async function calcAvgForSubmission(submissionId: string): Promise<number | null> {
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("eval_scores")
+    .select("score")
+    .eq("submission_id", submissionId)
+    .gt("score", 0);
+  if (!data || data.length === 0) return null;
+  const sum = (data as Array<{ score: number }>).reduce((acc, r) => acc + r.score, 0);
+  return Math.round((sum / data.length) * 100) / 100;
+}
+
 export function useConfirmEvaluation() {
   const qc = useQueryClient();
   return useMutation({
@@ -678,22 +691,33 @@ export function useConfirmEvaluation() {
       finalGrade,
       committeeComment,
       confirmedBy,
-      scoreSelfAvg,
-      scoreFirstAvg,
-      scoreSecondAvg,
-      finalScore,
+      selfSubmissionId,
+      firstSubmissionId,
+      secondSubmissionId,
     }: {
       instanceId: string;
       finalGrade: EvalFinalResult["finalGrade"];
       committeeComment: string;
       confirmedBy: string;
-      scoreSelfAvg: number | null;
-      scoreFirstAvg: number | null;
-      scoreSecondAvg: number | null;
-      finalScore: number | null;
+      selfSubmissionId: string | null;
+      firstSubmissionId: string | null;
+      secondSubmissionId: string | null;
     }) => {
       if (!supabase) throw new Error("Supabase not initialized");
       const now = new Date().toISOString();
+
+      // 각 단계 평균 계산
+      const [scoreSelfAvg, scoreFirstAvg, scoreSecondAvg] = await Promise.all([
+        selfSubmissionId ? calcAvgForSubmission(selfSubmissionId) : Promise.resolve(null),
+        firstSubmissionId ? calcAvgForSubmission(firstSubmissionId) : Promise.resolve(null),
+        secondSubmissionId ? calcAvgForSubmission(secondSubmissionId) : Promise.resolve(null),
+      ]);
+
+      // 최종 점수: 2차 있으면 (1차+2차)/2, 없으면 1차 평균
+      const finalScore =
+        scoreFirstAvg !== null && scoreSecondAvg !== null
+          ? Math.round(((scoreFirstAvg + scoreSecondAvg) / 2) * 100) / 100
+          : scoreFirstAvg;
 
       const { error: resErr } = await supabase
         .from("eval_final_results")
@@ -747,7 +771,14 @@ export function useGetMyPendingEvals(evaluatorId: string | null, cycleId: string
 
       if (!assignments || assignments.length === 0) return [];
 
-      const evaluateeIds = assignments.map((a: Record<string, unknown>) => a.evaluatee_id);
+      // evaluatee_id → evaluator_role 매핑 (role-status 교차 검증용)
+      const roleByEvaluatee = new Map<string, string>(
+        (assignments as Array<{ evaluatee_id: string; evaluator_role: string }>).map(
+          (a) => [a.evaluatee_id, a.evaluator_role],
+        ),
+      );
+
+      const evaluateeIds = Array.from(roleByEvaluatee.keys());
       const { data: instances, error: iErr } = await supabase
         .from("eval_instances")
         .select("*, employees(full_name, department, job_title, job_group)")
@@ -755,7 +786,17 @@ export function useGetMyPendingEvals(evaluatorId: string | null, cycleId: string
         .in("employee_id", evaluateeIds);
       if (iErr) throw iErr;
 
-      return (instances ?? []).map(mapInstance);
+      // 내 역할(evaluator_role)이 현재 workflow 단계와 일치하는 것만 반환
+      // first → pending_first 일 때만, second → pending_second 일 때만
+      return (instances ?? [])
+        .filter((inst: Record<string, unknown>) => {
+          const role = roleByEvaluatee.get(inst.employee_id as string);
+          const status = inst.workflow_status as string;
+          if (role === "first") return status === "pending_first";
+          if (role === "second") return status === "pending_second";
+          return false;
+        })
+        .map(mapInstance);
     },
   });
 }

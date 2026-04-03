@@ -1,5 +1,67 @@
 # Work Log
 
+## 2026-04-02 (Session 8) — 역할-상태 매칭 버그 수정
+
+### Completed
+
+- **`useGetMyPendingEvals` 역할 매칭 버그 수정** (`hooks/use-evaluation.ts`)
+  - 기존: 1차 평가자(role=first)가 `pending_second` 상태 인스턴스도 목록에 표시되던 버그
+  - `roleByEvaluatee` Map 생성 후 인스턴스 fetch 결과를 role+status 교차 검증으로 필터
+  - `role="first"` → `workflow_status="pending_first"` 인 것만, `role="second"` → `pending_second` 인 것만 반환
+
+### Remaining Issues
+
+- Supabase migration 3개 아직 실행 전 (로컬 실행 필요)
+- 로그인/인증 연결 미완료 (localStorage 테스트 액터로 임시 운영)
+
+### Recommended Next Task
+
+1. `.env.local` 생성 + `supabase db push --linked` 실행
+2. E2E 테스트: 사이클 생성 → 활성화 → 자기평가 → 1차평가 → 커미티 확정 → 결과 보기 → 사이클 종료
+3. 부서별 그룹 뷰 빈 상태 처리 및 페이지네이션 (48명 이상일 때)
+4. Supabase Auth 연결 (직원 이메일 확보 후)
+
+---
+
+## 2026-04-02 (Session 7) — 인사평가 모듈 완성: 결과 페이지 + UX 개선
+
+### Completed
+
+- **`pages/evaluation/result.tsx` 신규 생성** — 확정 평가 결과 읽기 전용 페이지
+  - 최종 등급(S/A/B/C/D) 큰 배지 + Trophy 아이콘
+  - 자기/1차/2차 평균 + 최종 점수 요약 카드 (최종 점수는 다크 카드로 강조)
+  - 커미티 의견 섹션, 확정일 표시, 단계별 점수 비교
+
+- **라우팅 버그 수정** (`App.tsx`)
+  - `/evaluation/form/:instanceId/:step`이 `/evaluation/:cycleId`에 먼저 매칭되던 문제 수정
+  - 구체적 경로(form, committee, result)를 `/:cycleId` 앞으로 이동
+
+- **`useConfirmEvaluation` 평균 계산 구현** (`hooks/use-evaluation.ts`)
+  - 기존: 평균 점수 모두 null로 저장하던 버그 수정
+  - `calcAvgForSubmission()` 헬퍼로 DB에서 직접 조회·계산, 최종 점수 자동 산출
+
+- **`CycleDetail` 대폭 개선** (`pages/evaluation/index.tsx`)
+  - 상태별 버튼 분기: 커미티 검토 / 결과 보기 / 없음
+  - 검색바 (이름·부서·직책) + 상태 통계 카드 클릭 필터
+  - "사이클 종료" 버튼 (모든 인스턴스 confirmed 시 활성화)
+  - Supabase 미연결 시 붉은색 설정 안내 배너
+
+- **대시보드 멤버 뷰** — 활성 평가 사이클 있으면 "평가 바로가기" 카드 표시
+
+### Remaining Issues
+
+- Supabase migration 3개 아직 실행 전 (로컬 실행 필요)
+- 로그인/인증 연결 미완료 (localStorage 테스트 액터로 임시 운영)
+- 실제 사용자 이메일 확보 후 Supabase Auth 연결 필요
+
+### Recommended Next Task
+
+1. `.env.local` 생성 + `supabase db push --linked` 실행
+2. E2E 테스트: 사이클 생성 → 활성화 → 자기평가 → 1차평가 → 커미티 확정 → 결과 보기 → 사이클 종료
+3. Supabase Auth 연결 (직원 이메일 확보 후)
+
+---
+
 ## 2026-04-02 (Session 6) — GlobalENP 인사평가 시스템 구축
 
 ### Completed
