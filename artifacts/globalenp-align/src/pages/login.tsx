@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { hasSupabaseEnv } from "@/lib/supabase";
 
 export default function Login() {
   const { login, isLoggingIn } = useAuth();
@@ -88,9 +89,24 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-[hsl(var(--neutral-500))] mt-8">
-            로컬 개발 환경에서는 테스트 계정이 기본 입력될 수 있습니다.
-          </p>
+          {!hasSupabaseEnv && (
+            <div className="mt-6 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+              <p className="text-xs font-semibold text-amber-300 mb-2">데모 계정</p>
+              <div className="space-y-1 text-xs text-amber-400/80 font-mono">
+                <p>admin@globalenp.com / admin1234</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("admin@globalenp.com");
+                  setPassword("admin1234");
+                }}
+                className="mt-3 text-xs text-amber-300 underline underline-offset-2 hover:text-amber-200"
+              >
+                자동 입력
+              </button>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

@@ -79,12 +79,7 @@ async function legacyFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 function isLocalDevAuthEnabled() {
   if (typeof window === "undefined") return false;
-  const envEnabled = import.meta.env.VITE_ENABLE_LOCAL_DEV_AUTH === "true";
-  const isLocalhost =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
-
-  return import.meta.env.DEV && envEnabled && isLocalhost;
+  return import.meta.env.VITE_ENABLE_LOCAL_DEV_AUTH === "true";
 }
 
 function getStoredDevUser(): AuthUser | null {
