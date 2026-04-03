@@ -1,5 +1,42 @@
 # Work Log
 
+## 2026-04-03 (Session 9) — 배포 완료 + Supabase Auth 연동 준비
+
+### Completed
+
+- **Vercel 배포** — https://globalenp-align.vercel.app
+  - api-client-react 타입 빌드, `vercel build --prebuilt` 방식으로 배포
+  - GitHub ↔ Vercel 자동 배포 연결 (`vercel git connect`)
+  - `VITE_ENABLE_LOCAL_DEV_AUTH=true` Vercel 환경변수 설정
+
+- **데모 로그인 활성화**
+  - `isLocalDevAuthEnabled()` DEV/localhost 제한 제거 — 프로덕션에서도 동작
+  - 로그인 페이지에 데모 계정 안내 + 자동 입력 버튼 (Supabase 미연결 시만 표시)
+
+- **GlobalENP 로고 교체** (`BrandLogo.tsx`)
+  - 실제 PNG 이미지 파일로 교체 (`public/images/globalenp-logo.png`)
+
+- **`useMyEmployeeId()` 훅 추가** (`use-evaluation.ts`)
+  - Supabase 연결 시: `profile_id = auth.uid()` 인 employee 자동 조회
+  - 미연결 시: localStorage `eval_test_actor_id` 폴백
+  - evaluation 3개 페이지(index/form/committee)에서 `getTestActorId()` → `useMyEmployeeId()` 교체
+
+### Pending (사용자 직접 실행)
+
+1. `git push origin main` — SSH 키 없어 로컬 커밋 5개가 GitHub에 미반영
+2. Supabase 연결 — `.env.local` 생성 + Vercel 환경변수 등록
+3. `supabase db push --linked` — 마이그레이션 3개 적용
+4. Supabase에서 `employees.profile_id` 업데이트 — 직원 이메일 매핑 후
+
+### Recommended Next Task
+
+Supabase 연결 후 E2E 테스트:
+1. `admin@globalenp.com` Supabase 계정 생성
+2. `employees` 테이블에 해당 profile_id 설정
+3. 사이클 생성 → 활성화 → 자기평가 → 1차평가 → 커미티 확정 → 결과 보기
+
+---
+
 ## 2026-04-02 (Session 8) — 역할-상태 매칭 버그 수정
 
 ### Completed
