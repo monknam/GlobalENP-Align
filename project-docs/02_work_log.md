@@ -1,5 +1,69 @@
 # Work Log
 
+## 2026-04-09 (Session Y) — TO/PO 모듈 완성 + 관리자 기능 추가
+
+### Completed
+
+- **FormWizard 완성** (`pages/org-management/to-request/FormWizard.tsx`)
+  - Step 1: 신청자 성명 + 고용 형태 필드 추가, 제출 후 폼 초기화
+  - Step 2: 유효성 메시지 추가
+  - Step 3: placeholder → 실제 구현. 선택 부서 직원 자동 로드 + 각 직원별 현재 업무 textarea 제공. `useEffect`로 부서 변경 시 팀원 목록 자동 갱신
+  - Step 5: 팀원 업무 기재 현황 요약 표시
+  - 제출 유효성 검사 (신청자 성명 누락 시 Step 1로 복귀)
+
+- **useGetTORequests / useUpdateTORequestStatus 훅 추가** (`hooks/use-org-management.ts`)
+  - `useGetTORequests`: 전체 TO 신청 목록 최신순 조회
+  - `useUpdateTORequestStatus`: 신청 건별 상태 변경 (검토중/승인완료/채용중/완료/반려/보류)
+  - `TO_REQUESTS_QUERY_KEY` 분리 + `useSubmitTORequest` onSuccess에서 invalidation 연결
+
+- **TO 신청 관리자 페이지 신규 생성** (`pages/org-management/requests.tsx`)
+  - 상태별 건수 요약 배지
+  - 신청 카드 클릭 시 상세(충원 사유, JD) 펼침/접힘
+  - 인라인 드롭다운으로 상태 즉시 변경
+  - 라우트: `/org-management/requests`
+
+- **Shell + App.tsx 업데이트**
+  - 사이드바 '조직/인력 관리' 섹션에 관리자 전용 '신청 관리' 메뉴 추가 (`isAdmin`)
+  - App.tsx `/org-management/requests` 라우트 등록
+
+- **타입체크 통과** — TypeScript 오류 없음
+
+### Remaining Issues (사용자 직접 실행 필요)
+
+1. **Supabase 마이그레이션 적용**
+   ```bash
+   supabase db push --linked
+   ```
+   대상 마이그레이션 5개:
+   - `20260402000001_evaluation_workflow.sql`
+   - `20260402000002_eval_items_seed.sql`
+   - `20260402000003_globalenp_employees.sql`
+   - `20260409000001_to_management.sql`
+   - `20260409000002_to_management_seed.sql`
+
+2. **`.env.local` 생성** (`artifacts/globalenp-align/.env.local`)
+   ```env
+   VITE_SUPABASE_URL=https://xxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJ...
+   VITE_ENABLE_LOCAL_DEV_AUTH=true
+   ```
+
+3. **Supabase 관리자 계정 생성** (Supabase 대시보드 → Auth → Users)
+   - `admin@globalenp.com` 계정 생성 후 `profiles` 테이블에 `role='admin'` 설정
+
+4. **직원 이메일 확보 후** `employees.profile_id` 매핑
+
+### Recommended Next Task
+
+- Supabase 연결 후 E2E 테스트:
+  1. admin 로그인 → 사이클 생성 → 활성화
+  2. 직원 로그인 → 자기평가 제출
+  3. 상사 로그인 → 1차평가 제출
+  4. admin → 커미티 확정 → 결과 확인
+  5. TO 충원 신청 → 관리자 페이지에서 상태 변경 확인
+
+---
+
 ## 2026-04-09 (Session X) — TO/PO 조직도 관리 모듈 신규 추가
 
 ### Completed

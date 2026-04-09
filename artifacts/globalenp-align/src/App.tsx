@@ -23,6 +23,7 @@ import CommitteeReview from "@/pages/evaluation/committee";
 import EvaluationResult from "@/pages/evaluation/result";
 import OrgDashboard from "@/pages/org-management/dashboard";
 import TORequestForm from "@/pages/org-management/to-request/FormWizard";
+import TORequestsAdmin from "@/pages/org-management/requests";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +66,7 @@ function Router() {
       {/* TO/PO 조직 관리 */}
       <Route path="/org-management/dashboard" component={OrgDashboard} />
       <Route path="/org-management/to-request" component={TORequestForm} />
+      <Route path="/org-management/requests" component={TORequestsAdmin} />
 
       <Route component={NotFound} />
     </Switch>

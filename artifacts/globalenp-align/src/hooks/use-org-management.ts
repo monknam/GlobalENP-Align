@@ -63,6 +63,7 @@ export interface DepartmentOrgData {
 /** Hooks */
 
 export const ORG_QUERY_KEY = ["org-chart"];
+export const TO_REQUESTS_QUERY_KEY = ["to-requests"];
 
 /** 
  * 현재 부서별 직원 목록(PO)과 배정된 TO 현황을 통합해서 가져오는 훅 
@@ -146,14 +147,80 @@ export function useSubmitTORequest() {
         .single();
 
       if (error) throw error;
-
-      // TODO: 이후 이메일 발송 Edge Function 호출 로직 등은 여기에 추가될 수 있습니다.
-
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ORG_QUERY_KEY });
-      // TODO: to_requests 인밸리데이션 추가
+      queryClient.invalidateQueries({ queryKey: TO_REQUESTS_QUERY_KEY });
+    },
+  });
+}
+
+export type TORequestStatus =
+  | "🟡 검토중"
+  | "🔵 승인완료"
+  | "🔄 채용중"
+  | "✅ 완료"
+  | "❌ 반려"
+  | "⏸ 보류";
+
+export interface TORequest {
+  id: string;
+  doc_no: string;
+  requested_at: string;
+  department: string;
+  requester_name: string;
+  target_rank: string;
+  headcount: number;
+  employment_type: string;
+  reasons: string[];
+  new_work_jd: string | null;
+  approval_status: TORequestStatus;
+  created_at: string;
+}
+
+/**
+ * 관리자: 전체 TO 신청 목록 조회
+ */
+export function useGetTORequests() {
+  return useQuery({
+    queryKey: TO_REQUESTS_QUERY_KEY,
+    queryFn: async (): Promise<TORequest[]> => {
+      if (!supabase) throw new Error("Supabase client is not initialized");
+      const { data, error } = await supabase
+        .from("to_requests")
+        .select(
+          "id, doc_no, requested_at, department, requester_name, target_rank, headcount, employment_type, reasons, new_work_jd, approval_status, created_at"
+        )
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as TORequest[];
+    },
+  });
+}
+
+/**
+ * 관리자: TO 신청 상태 변경
+ */
+export function useUpdateTORequestStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      approval_status,
+    }: {
+      id: string;
+      approval_status: TORequestStatus;
+    }) => {
+      if (!supabase) throw new Error("Supabase client is not initialized");
+      const { error } = await supabase
+        .from("to_requests")
+        .update({ approval_status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TO_REQUESTS_QUERY_KEY });
     },
   });
 }

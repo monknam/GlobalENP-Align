@@ -3,6 +3,42 @@
 -- 글로벌이앤피 직원 48명 시드 (기준일: 2026.03.24)
 -- ============================================================
 
+-- employees 테이블 스키마 보정 (구버전 컬럼 누락 시 추가)
+ALTER TABLE employees
+  ADD COLUMN IF NOT EXISTS employee_no        TEXT,
+  ADD COLUMN IF NOT EXISTS full_name          TEXT,
+  ADD COLUMN IF NOT EXISTS gender             TEXT,
+  ADD COLUMN IF NOT EXISTS department         TEXT,
+  ADD COLUMN IF NOT EXISTS job_title          TEXT,
+  ADD COLUMN IF NOT EXISTS job_role           TEXT,
+  ADD COLUMN IF NOT EXISTS hire_date          DATE,
+  ADD COLUMN IF NOT EXISTS birth_date         DATE,
+  ADD COLUMN IF NOT EXISTS phone              TEXT,
+  ADD COLUMN IF NOT EXISTS job_group          TEXT,
+  ADD COLUMN IF NOT EXISTS is_department_head BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS is_active          BOOLEAN DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS supervisor_id      UUID,
+  ADD COLUMN IF NOT EXISTS profile_id         UUID,
+  ADD COLUMN IF NOT EXISTS updated_at         TIMESTAMPTZ DEFAULT NOW();
+
+-- 구버전 name 컬럼 NOT NULL 제약 제거 (앱은 full_name 사용)
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'employees' AND column_name = 'name' AND is_nullable = 'NO'
+  ) THEN
+    ALTER TABLE employees ALTER COLUMN name DROP NOT NULL;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'employees_employee_no_key'
+  ) THEN
+    ALTER TABLE employees ADD CONSTRAINT employees_employee_no_key UNIQUE (employee_no);
+  END IF;
+END $$;
+
 TRUNCATE eval_assignments, eval_instances, eval_submissions,
          eval_scores, eval_final_results RESTART IDENTITY CASCADE;
 TRUNCATE employees RESTART IDENTITY CASCADE;
