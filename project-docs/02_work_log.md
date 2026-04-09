@@ -1,5 +1,32 @@
 # Work Log
 
+## 2026-04-09 (Session X) — TO/PO 조직도 관리 모듈 신규 추가
+
+### Completed
+
+- **TO/PO 관리 데이터베이스 스키마 및 시드 데이터 추가** (`20260409000001_to_management.sql`, `20260409000002_to_management_seed.sql`)
+  - `employee_tasks`, `to_positions`, `to_requests`, `to_request_logs` 테이블 생성 및 RLS 적용
+- **TO/PO 관리 프론트엔드 사이드바 및 라우팅 반영**
+  - `Shell.tsx`: 사이드바 '조직/인력 관리' 영역(대시보드, TO 충원 신청) 노출
+  - `App.tsx`: 라우트에 `/org-management/dashboard`, `/org-management/to-request` 등록
+- **프론트엔드 비즈니스 로직 훅 구현** (`hooks/use-org-management.ts`)
+  - `useDepartmentOrgChart`: 부서 배열 기준 직원 및 TO 통합 조회 훅
+  - `useSubmitTORequest`: TO/PO 충원 신청서 제출 및 DB 저장
+- **관리자용 대시보드 및 TO 신청 UI 뼈대 렌더링**
+  - `pages/org-management/dashboard.tsx`: 조직별 현원(PO), TO 매핑 정보 기반 뷰포트
+  - `pages/org-management/to-request/FormWizard.tsx`: 신청용 5-Step 화면 UI 적용 완료
+
+### Remaining Issues
+
+- 린팅/빌드 검증을 위한 로컬 노드 환경(npm/pnpm 환경 변수 확인) 부재
+- `to_requests` 제출 이후 경영담당자 이메일 발송 자동화 (Edge Function 등) 연결 전
+
+### Recommended Next Task
+
+- 개발 환경에서 `supabase db push --linked` 실행 후 신규 뷰포트 UI 시각적 회귀 및 상태 유지 검증
+
+---
+
 ## 2026-04-03 (Session 9) — 배포 완료 + Supabase Auth 연동 준비
 
 ### Completed

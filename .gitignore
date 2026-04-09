@@ -48,3 +48,4 @@ Thumbs.db
 *.env.local
 .env.local
 artifacts/**/.env.local
+.vercel

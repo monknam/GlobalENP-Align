@@ -2,14 +2,15 @@
 
 ## Active Goal
 
-인사평가 모듈 완성 및 실제 사용 가능한 상태로 만들기.
+1. 인사평가 모듈 완성 및 실제 사용 가능한 상태로 만들기.
+2. TO/PO 조직 관리 모듈(조직도 기반 TO 현황판 + 충원결재플로우) 연동 및 테스트.
 
 ## Immediate Objectives
 
-1. Supabase migration 3개 적용 (`supabase db push --linked`)
-2. E2E 테스트: 사이클 생성 → 활성화 → 자기평가 → 1차평가 → 커미티 확정
+1. Supabase migration 적용 (`supabase db push --linked`) - 인사평가 및 TO/PO 모듈 스키마 적용
+2. 인사평가 E2E 테스트: 사이클 생성 → 활성화 → 자기평가 → 1차평가 → 커미티 확정
 3. 직원 이메일 확보 후 Supabase Auth 연결 (로그인 기능 완성)
-4. 대시보드에 인사평가 현황 위젯 추가
+4. 관리자 대시보드 내 TO/PO 모듈 조직도 위젯 반영 및 폼 테스트
 
 ## Completed in This Phase
 

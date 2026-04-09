@@ -21,6 +21,8 @@ import EvaluationIndex from "@/pages/evaluation/index";
 import EvaluationForm from "@/pages/evaluation/form";
 import CommitteeReview from "@/pages/evaluation/committee";
 import EvaluationResult from "@/pages/evaluation/result";
+import OrgDashboard from "@/pages/org-management/dashboard";
+import TORequestForm from "@/pages/org-management/to-request/FormWizard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +61,10 @@ function Router() {
       <Route path="/evaluation/:cycleId/:instanceId/result" component={EvaluationResult} />
       <Route path="/evaluation/:cycleId" component={EvaluationIndex} />
       <Route path="/evaluation" component={EvaluationIndex} />
+
+      {/* TO/PO 조직 관리 */}
+      <Route path="/org-management/dashboard" component={OrgDashboard} />
+      <Route path="/org-management/to-request" component={TORequestForm} />
 
       <Route component={NotFound} />
     </Switch>

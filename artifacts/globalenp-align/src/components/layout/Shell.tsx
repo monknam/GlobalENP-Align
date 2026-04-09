@@ -87,6 +87,13 @@ export function Shell({ children, guestMode = false }: ShellProps) {
       ],
     },
     {
+      title: "조직/인력 관리",
+      items: [
+        { href: "/org-management/dashboard", label: "TO/PO 현황판", icon: Building2, show: isLeader },
+        { href: "/org-management/to-request", label: "TO 충원 신청", icon: ClipboardList, show: isLeader },
+      ],
+    },
+    {
       title: "운영 설정",
       items: [
         { href: "/admin/surveys", label: "진단 운영", icon: Settings, show: isAdmin },
