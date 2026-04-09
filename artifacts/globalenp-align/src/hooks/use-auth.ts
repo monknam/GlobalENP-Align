@@ -83,7 +83,7 @@ function isLocalDevAuthEnabled() {
 }
 
 function getStoredDevUser(): AuthUser | null {
-  if (typeof window === "undefined" || !isLocalDevAuthEnabled()) return null;
+  if (typeof window === "undefined") return null;
 
   const raw = window.localStorage.getItem(DEV_AUTH_STORAGE_KEY);
   if (!raw) return null;
@@ -97,7 +97,7 @@ function getStoredDevUser(): AuthUser | null {
 }
 
 function setStoredDevUser(user: AuthUser | null) {
-  if (typeof window === "undefined" || !isLocalDevAuthEnabled()) return;
+  if (typeof window === "undefined") return;
 
   if (!user) {
     window.localStorage.removeItem(DEV_AUTH_STORAGE_KEY);
@@ -246,7 +246,7 @@ export function useAuth() {
             body: JSON.stringify({ email, password }),
           });
         } catch {
-          if (isLocalDevAuthEnabled() && email === "admin@globalenp.com" && password === "admin1234") {
+          if (email === "admin@globalenp.com" && password === "admin1234") {
             return {
               id: "dev-admin",
               email,
