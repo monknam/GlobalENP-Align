@@ -19,8 +19,9 @@ export interface EmployeeWithTasks {
   department: string;
   job_title: string;
   job_role: string | null;
+  supervisor_id: string | null;
+  is_department_head: boolean;
   employee_tasks?: EmployeeTask[];
-  // 기타 필요한 직원 필드
 }
 
 export interface TOPosition {
@@ -79,8 +80,11 @@ export function useDepartmentOrgChart() {
         .from("employees")
         .select(`
           id, employee_no, full_name, department, job_title, job_role,
+          supervisor_id, is_department_head,
           employee_tasks (id, employee_id, task_name, description, created_at)
         `)
+        .eq("is_active", true)
+        .order("is_department_head", { ascending: false })
         .order("job_title", { ascending: false });
 
       if (empError) throw empError;
