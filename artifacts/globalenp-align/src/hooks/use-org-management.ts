@@ -46,13 +46,20 @@ export interface TORequestPayload {
   employment_type: string;
   reasons: string[];
   reason_detail?: string;
+  project_info?: string;          // 연관 프로젝트/공사명
+  replace_person?: string;        // 대체 대상자 이름 (reason_detail에 포함)
   current_team_work: any;
   new_work_jd?: string;
   required_licenses: string[];
   experience_req?: string;
-  approval_status?: string;
+  preferred_cond?: string;        // 우대 조건
+  budget_status?: string;         // 기확보 | 신규 요청
+  is_urgent?: boolean;            // 긴급 여부
+  desired_hire_date?: string;     // 채용 희망일
   contract_start?: string;
   contract_end?: string;
+  remarks?: string;               // 비고
+  approval_status?: string;
 }
 
 export interface DepartmentOrgData {
