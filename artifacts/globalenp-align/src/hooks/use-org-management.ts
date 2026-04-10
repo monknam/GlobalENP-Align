@@ -160,6 +160,34 @@ export function useSubmitTORequest() {
   });
 }
 
+/**
+ * 직원 부서/상위관리자 변경 (조직도 DnD 편집)
+ */
+export function useUpdateEmployeeDept() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      department,
+      supervisor_id,
+    }: {
+      id: string;
+      department: string;
+      supervisor_id?: string | null;
+    }) => {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { error } = await supabase
+        .from("employees")
+        .update({ department, supervisor_id: supervisor_id ?? null, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ORG_QUERY_KEY });
+    },
+  });
+}
+
 export type TORequestStatus =
   | "🟡 검토중"
   | "🔵 승인완료"
