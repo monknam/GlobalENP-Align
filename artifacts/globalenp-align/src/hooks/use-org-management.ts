@@ -263,3 +263,77 @@ export function useUpdateTORequestStatus() {
     },
   });
 }
+
+// ── 직원 관리 Admin ──────────────────────────────────────────
+
+export const EMPLOYEES_ADMIN_KEY = ["employees-admin"];
+
+export interface EmployeeAdminRow {
+  id: string;
+  employee_no: string | null;
+  full_name: string | null;
+  gender: string | null;
+  department: string | null;
+  job_title: string | null;
+  job_role: string | null;
+  hire_date: string | null;
+  birth_date: string | null;
+  phone: string | null;
+  job_group: string | null;
+  is_department_head: boolean;
+  is_active: boolean;
+  supervisor_id: string | null;
+}
+
+/** 전체 직원 목록 (관리자용, 비활성 포함) */
+export function useEmployeesAdmin() {
+  return useQuery({
+    queryKey: EMPLOYEES_ADMIN_KEY,
+    queryFn: async (): Promise<EmployeeAdminRow[]> => {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id,employee_no,full_name,gender,department,job_title,job_role,hire_date,birth_date,phone,job_group,is_department_head,is_active,supervisor_id")
+        .order("department", { ascending: true })
+        .order("is_department_head", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as EmployeeAdminRow[];
+    },
+  });
+}
+
+/** 직원 정보 수정 */
+export function useUpdateEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (patch: Partial<EmployeeAdminRow> & { id: string }) => {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { id, ...rest } = patch;
+      const { error } = await supabase
+        .from("employees")
+        .update({ ...rest, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: EMPLOYEES_ADMIN_KEY });
+      queryClient.invalidateQueries({ queryKey: ORG_QUERY_KEY });
+    },
+  });
+}
+
+/** 직원 신규 등록 */
+export function useAddEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Omit<EmployeeAdminRow, "id">) => {
+      if (!supabase) throw new Error("Supabase not initialized");
+      const { error } = await supabase.from("employees").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: EMPLOYEES_ADMIN_KEY });
+      queryClient.invalidateQueries({ queryKey: ORG_QUERY_KEY });
+    },
+  });
+}

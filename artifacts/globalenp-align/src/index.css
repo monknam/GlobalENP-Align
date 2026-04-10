@@ -1,222 +1,375 @@
+/* ─────────────────────────────────────────────────────────────
+   GLOBALENP DESIGN SYSTEM — "Kinetic Authority"
+   Editorial Trust & Tech Precision
+   ─────────────────────────────────────────────────────────────
+   Fonts:
+     Manrope  → display / headings / numbers (geometric authority)
+     Inter    → body / labels (functional clarity)
+     Pretendard → Korean UI fallback
+
+   Color Roles:
+     Primary   #00619c  → CTAs, nav active, key actions
+     Secondary #3d5d9e  → supporting accents
+     Surface   #f7f9fc  → cool off-white page background
+     Tertiary  #8f4c00  → warmth / data highlights
+
+   Rules from spec:
+     ✗ No 1px solid borders between sections → use bg-shift
+     ✗ No pure black → on-surface #191c1e
+     ✗ No heavy shadows → ambient 6% opacity only
+     ✗ No dividers → use 24px whitespace or bg-shift
+     ✓ Manrope for all headings & numbers
+     ✓ Pill buttons & chips → border-radius: 9999px
+     ✓ Glassmorphism for floats → backdrop-blur(20px)
+   ───────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
-/* =========================================
-   GLOBALENP DESIGN SYSTEM — TOKENS
-   =========================================
-   Primary    : brand blue — buttons, highlights
-   Neutral    : 80%+ of UI — bg, text, borders
-   Secondary  : supporting UI elements
-   Extended   : red=error, yellow=warn, green=success
-   ========================================= */
-
+/* ── THEME TOKENS ─────────────────────────────────────────── */
 @theme inline {
-  /* Semantic mappings */
-  --color-background: hsl(var(--neutral-50));
-  --color-foreground: hsl(var(--neutral-900));
-  --color-border: hsl(var(--neutral-200));
-  --color-input: hsl(var(--neutral-200));
-  --color-ring: hsl(var(--primary-400));
+  --color-background:           hsl(var(--enp-surface));
+  --color-foreground:           hsl(var(--enp-on-surface));
+  --color-border:               hsl(var(--enp-outline-variant));
+  --color-input:                hsl(var(--enp-surface-low));
+  --color-ring:                 hsl(var(--enp-primary));
 
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(var(--neutral-900));
-  --color-card-border: hsl(var(--neutral-200));
+  --color-card:                 hsl(var(--enp-surface-lowest));
+  --color-card-foreground:      hsl(var(--enp-on-surface));
+  --color-popover:              hsl(var(--enp-surface-high));
+  --color-popover-foreground:   hsl(var(--enp-on-surface));
 
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(var(--neutral-900));
-  --color-popover-border: hsl(var(--neutral-200));
-
-  --color-primary: hsl(var(--primary-400));
-  --color-primary-foreground: hsl(0 0% 100%);
-
-  --color-secondary: hsl(var(--neutral-100));
-  --color-secondary-foreground: hsl(var(--neutral-800));
-
-  --color-muted: hsl(var(--neutral-100));
-  --color-muted-foreground: hsl(var(--neutral-500));
-
-  --color-accent: hsl(var(--primary-50));
-  --color-accent-foreground: hsl(var(--primary-400));
-
-  --color-destructive: hsl(var(--red-500));
+  --color-primary:              hsl(var(--enp-primary));
+  --color-primary-foreground:   hsl(var(--enp-on-primary));
+  --color-secondary:            hsl(var(--enp-secondary-container));
+  --color-secondary-foreground: hsl(var(--enp-on-secondary-container));
+  --color-muted:                hsl(var(--enp-surface-mid));
+  --color-muted-foreground:     hsl(var(--enp-on-surface-variant));
+  --color-accent:               hsl(var(--enp-primary-container));
+  --color-accent-foreground:    hsl(var(--enp-on-primary-container));
+  --color-destructive:          hsl(var(--enp-error));
   --color-destructive-foreground: hsl(0 0% 100%);
 
-  /* Chart colors */
-  --color-chart-1: hsl(var(--primary-400));
-  --color-chart-2: hsl(var(--secondary-400));
-  --color-chart-3: hsl(var(--green-500));
-  --color-chart-4: hsl(var(--yellow-400));
-  --color-chart-5: hsl(var(--red-500));
+  --color-chart-1: hsl(var(--enp-primary));
+  --color-chart-2: hsl(var(--enp-secondary));
+  --color-chart-3: hsl(var(--enp-tertiary));
+  --color-chart-4: 38 92% 50%;
+  --color-chart-5: hsl(var(--enp-error));
 
-  --font-sans: 'Pretendard', 'Inter', sans-serif;
+  --font-display: 'Manrope', 'Pretendard', sans-serif;
+  --font-sans:    'Inter', 'Pretendard', sans-serif;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Roundedness scale from spec */
+  --radius-sm:   0.25rem;   /* inputs, small elements */
+  --radius:      0.5rem;    /* cards, containers */
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-full: 9999px;    /* pill buttons & chips ONLY */
 }
 
+/* ── COLOR PRIMITIVES ────────────────────────────────────────*/
 :root {
-  /* ── PRIMARY (Brand Blue) ── */
-  --primary-50:  221 100% 96%;
-  --primary-100: 221 91%  91%;
-  --primary-200: 221 87%  83%;
-  --primary-300: 221 84%  72%;
-  --primary-400: 221 83%  53%;   /* main button */
-  --primary-500: 224 76%  45%;   /* hover */
-  --primary-600: 226 71%  40%;
+  /* PRIMARY — #00619c */
+  --enp-primary:              204 100% 31%;
+  --enp-on-primary:           0 0% 100%;
+  --enp-primary-container:    204 100% 92%;
+  --enp-on-primary-container: 204 100% 10%;
 
-  /* ── SECONDARY (Teal/Slate-blue) ── */
-  --secondary-100: 199 60%  92%;
-  --secondary-200: 199 70%  82%;
-  --secondary-400: 199 89%  48%;
-  --secondary-500: 199 80%  40%;
+  /* SECONDARY — #3d5d9e */
+  --enp-secondary:                  225 42% 43%;
+  --enp-on-secondary:               0 0% 100%;
+  --enp-secondary-container:        225 60% 92%;
+  --enp-on-secondary-container:     225 42% 18%;
 
-  /* ── NEUTRAL ── */
-  --neutral-50:  210 33%  99%;   /* page background */
-  --neutral-100: 213 27%  96%;   /* secondary button bg */
-  --neutral-200: 214 32%  91%;   /* borders */
-  --neutral-300: 213 25%  84%;
-  --neutral-400: 215 20%  70%;
-  --neutral-500: 215 16%  47%;   /* muted text */
-  --neutral-600: 215 19%  35%;
-  --neutral-700: 217 24%  27%;
-  --neutral-800: 222 31%  18%;   /* sidebar bg */
-  --neutral-900: 222 47%  11%;   /* darkest text / sidebar */
+  /* TERTIARY — #8f4c00 (warmth) */
+  --enp-tertiary:             32 100% 28%;
+  --enp-on-tertiary:          0 0% 100%;
 
-  /* ── EXTENDED COLORS ── */
-  --red-500:    0   84%  60%;
-  --yellow-400: 38  92%  50%;
-  --green-500:  142 76%  36%;
-  --blue-400:   207 90%  54%;
+  /* ERROR */
+  --enp-error:                0 84% 60%;
 
-  /* ── SEMANTIC MAPPINGS ── */
-  --background:       var(--neutral-50);
-  --foreground:       var(--neutral-900);
-  --border:           var(--neutral-200);
-  --input:            var(--neutral-200);
-  --ring:             var(--primary-400);
+  /* SURFACE LAYERS — "stacked fine paper" */
+  --enp-surface-lowest:       0 0% 100%;       /* pure white cards */
+  --enp-surface-low:          213 40% 98%;     /* #f7f9fc — page bg */
+  --enp-surface-mid:          213 27% 95%;     /* subtle containers */
+  --enp-surface-high:         213 20% 91%;     /* sidebar panels */
+  --enp-surface-highest:      213 16% 87%;     /* strong contrast panels */
+  --enp-surface:              213 40% 98%;     /* alias → page bg */
 
-  --radius: 0.75rem;
+  /* ON-SURFACE */
+  --enp-on-surface:           213 14% 12%;     /* #191c1e — no pure black */
+  --enp-on-surface-variant:   215 12% 42%;     /* muted labels */
+
+  /* OUTLINE */
+  --enp-outline:              215 12% 60%;
+  --enp-outline-variant:      214 20% 88%;     /* ghost border 15% opacity */
+
+  /* SIDEBAR dark surface */
+  --enp-sidebar-bg:           222 32% 13%;
+  --enp-sidebar-text:         213 16% 78%;
+
+  /* ── LEGACY ALIASES (keep existing code working) ── */
+  --primary-400:  var(--enp-primary);
+  --primary-50:   var(--enp-primary-container);
+  --primary-100:  204 100% 88%;
+  --primary-200:  204 100% 80%;
+  --primary-500:  204 100% 25%;
+  --primary-600:  204 100% 20%;
+
+  --secondary-100: 225 50% 92%;
+  --secondary-200: 225 50% 82%;
+  --secondary-400: var(--enp-secondary);
+  --secondary-500: 225 42% 36%;
+
+  --neutral-50:  var(--enp-surface-low);
+  --neutral-100: var(--enp-surface-mid);
+  --neutral-200: var(--enp-outline-variant);
+  --neutral-300: 213 16% 78%;
+  --neutral-400: var(--enp-outline);
+  --neutral-500: var(--enp-on-surface-variant);
+  --neutral-600: 215 16% 34%;
+  --neutral-700: 217 22% 26%;
+  --neutral-800: 222 28% 18%;
+  --neutral-900: var(--enp-sidebar-bg);
+
+  --red-500:    var(--enp-error);
+  --yellow-400: 38 92% 50%;
+  --green-500:  142 72% 34%;
+  --blue-400:   204 80% 54%;
+
+  --background: var(--enp-surface);
+  --foreground: var(--enp-on-surface);
+  --border:     var(--enp-outline-variant);
+  --input:      var(--enp-surface-low);
+  --ring:       var(--enp-primary);
+
+  --radius: 0.5rem;
 }
 
-/* =========================================
-   BASE LAYER
-   ========================================= */
+/* ── BASE ─────────────────────────────────────────────────── */
 @layer base {
   * {
-    @apply border-border;
+    /* Ghost border — 15% max opacity, never 100% */
+    border-color: hsl(var(--enp-outline-variant) / 0.15);
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans;
+    font-family: 'Inter', 'Pretendard', sans-serif;
+    background-color: hsl(var(--enp-surface));
+    color: hsl(var(--enp-on-surface));
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
   }
+  /* Manrope — geometric authority for headings */
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-semibold;
+    font-family: 'Manrope', 'Pretendard', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: hsl(var(--enp-on-surface));
   }
 }
 
-/* =========================================
-   SCROLLBAR
-   ========================================= */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--neutral-400)); }
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: hsl(var(--enp-outline-variant)); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover{ background: hsl(var(--enp-outline)); }
 
-/* =========================================
-   UTILITY CLASSES
-   ========================================= */
+/* ── ENP UTILITY CLASSES ─────────────────────────────────── */
 
-/* Card — default UI unit */
-.ts-card {
-  background: white;
-  border: 1px solid hsl(var(--neutral-200));
-  border-radius: 10px;
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.04);
+/* Brand gradient — primary → secondary */
+.enp-gradient {
+  background: linear-gradient(135deg,
+    hsl(var(--enp-primary)) 0%,
+    hsl(var(--enp-secondary)) 100%);
 }
 
-/* Anonymity notice box — Survey Intro */
+/* Glassmorphism — for modals, overlays, floating nav */
+.enp-glass {
+  background: rgba(247, 249, 252, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.45);
+}
+
+/* Ambient shadow — diffused natural light, not digital drop-shadow */
+.enp-shadow {
+  box-shadow:
+    0 16px 32px rgba(25,28,30,0.06),
+    0  4px 12px rgba(25,28,30,0.04);
+}
+.enp-shadow-sm {
+  box-shadow:
+    0  8px 24px rgba(25,28,30,0.05),
+    0  1px  4px rgba(25,28,30,0.03);
+}
+.enp-shadow-modal {
+  box-shadow:
+    0 24px 48px rgba(25,28,30,0.10),
+    0  8px 20px rgba(25,28,30,0.06);
+}
+
+/* Card — tonal layering, borderless (background shift = depth) */
+.enp-card {
+  background: hsl(var(--enp-surface-lowest));
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(25,28,30,0.06), 0 1px 4px rgba(25,28,30,0.03);
+}
+
+/* Surface levels */
+.enp-surface       { background: hsl(var(--enp-surface-low)); }
+.enp-surface-mid   { background: hsl(var(--enp-surface-mid)); }
+.enp-surface-high  { background: hsl(var(--enp-surface-high)); }
+
+/* Pill / chip (full roundedness exclusively) */
+.enp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: hsl(var(--enp-secondary-container));
+  color: hsl(var(--enp-on-secondary-container));
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* Primary CTA button — gradient pill */
+.enp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-family: 'Manrope', 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+  border: none;
+  outline: none;
+}
+.enp-btn-primary {
+  background: linear-gradient(135deg, hsl(var(--enp-primary)) 0%, hsl(var(--enp-secondary)) 100%);
+  color: hsl(var(--enp-on-primary));
+  box-shadow: 0 4px 12px rgba(0,97,156,0.25);
+}
+.enp-btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0,97,156,0.30);
+}
+.enp-btn-secondary {
+  background: hsl(var(--enp-surface-highest));
+  color: hsl(var(--enp-primary));
+}
+.enp-btn-secondary:hover:not(:disabled) {
+  background: hsl(var(--enp-surface-high));
+}
+.enp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Input — surface-low bg, no border, 2px primary ring on focus */
+.enp-input {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.25rem;
+  border: none;
+  background: hsl(var(--enp-surface-mid));
+  color: hsl(var(--enp-on-surface));
+  font-family: 'Inter', 'Pretendard', sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  outline: none;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.enp-input:focus {
+  background: hsl(var(--enp-surface-lowest));
+  box-shadow: 0 0 0 2px hsl(var(--enp-primary));
+}
+.enp-input::placeholder { color: hsl(var(--enp-on-surface-variant)); opacity: 0.6; }
+
+/* Label overline — Label MD spec */
+.enp-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--enp-on-surface-variant));
+  font-family: 'Inter', sans-serif;
+}
+
+/* Numbers — always Manrope */
+.enp-num {
+  font-family: 'Manrope', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── LEGACY COMPAT — existing classes kept working ───────── */
+.ts-card {
+  background: hsl(var(--enp-surface-lowest));
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(25,28,30,0.06), 0 1px 4px rgba(25,28,30,0.03);
+}
 .ts-notice-box {
-  background: hsl(var(--primary-50));
-  border-left: 4px solid hsl(var(--primary-400));
-  border-radius: 8px;
+  background: hsl(var(--enp-primary-container));
+  border-left: 4px solid hsl(var(--enp-primary));
+  border-radius: 0.5rem;
   padding: 1.25rem 1.5rem;
 }
-
-/* Primary button */
 .ts-btn-primary {
-  background: hsl(var(--primary-400));
-  color: white;
+  background: linear-gradient(135deg, hsl(var(--enp-primary)) 0%, hsl(var(--enp-secondary)) 100%);
+  color: hsl(var(--enp-on-primary));
   font-weight: 600;
-  border-radius: 8px;
-  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  border-radius: 9999px;
+  transition: opacity 0.15s, transform 0.1s;
 }
-.ts-btn-primary:hover:not(:disabled) {
-  background: hsl(var(--primary-500));
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  transform: translateY(-1px);
-}
-.ts-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-/* Secondary button */
+.ts-btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.ts-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 .ts-btn-secondary {
-  background: hsl(var(--neutral-100));
-  color: hsl(var(--neutral-800));
+  background: hsl(var(--enp-surface-high));
+  color: hsl(var(--enp-primary));
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 9999px;
   transition: background 0.15s;
 }
-.ts-btn-secondary:hover:not(:disabled) {
-  background: hsl(var(--neutral-200));
-}
-
-/* Likert scale */
+.ts-btn-secondary:hover:not(:disabled) { background: hsl(var(--enp-surface-highest)); }
 .ts-likert-btn {
-  border: 2px solid hsl(var(--neutral-200));
-  background: white;
-  color: hsl(var(--neutral-500));
-  border-radius: 10px;
+  border: 2px solid hsl(var(--enp-outline-variant));
+  background: hsl(var(--enp-surface-lowest));
+  color: hsl(var(--enp-on-surface-variant));
+  border-radius: 0.5rem;
   transition: all 0.15s;
 }
 .ts-likert-btn:hover:not(.ts-likert-selected) {
-  border-color: hsl(var(--primary-200));
-  background: hsl(var(--primary-50));
+  border-color: hsl(var(--enp-primary-container));
+  background: hsl(var(--enp-primary-container));
 }
 .ts-likert-selected {
-  border-color: hsl(var(--primary-400));
-  background: hsl(var(--primary-400));
-  color: white;
+  border-color: hsl(var(--enp-primary));
+  background: hsl(var(--enp-primary));
+  color: hsl(var(--enp-on-primary));
 }
-
-/* Input / Textarea */
 .ts-input {
-  border: 1px solid hsl(var(--neutral-300));
-  border-radius: 8px;
-  background: white;
-  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--enp-outline-variant));
+  border-radius: 0.25rem;
+  background: hsl(var(--enp-surface-lowest));
+  padding: 0.6rem 0.875rem;
   width: 100%;
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
 }
 .ts-input:focus {
-  border-color: hsl(var(--primary-400));
-  box-shadow: 0 0 0 3px hsl(var(--primary-50));
+  border-color: hsl(var(--enp-primary));
+  box-shadow: 0 0 0 2px hsl(var(--enp-primary-container));
 }
-
-/* Score badge colours for dashboard */
 .ts-score-high   { color: hsl(var(--green-500)); }
 .ts-score-medium { color: hsl(var(--yellow-400)); }
 .ts-score-low    { color: hsl(var(--red-500)); }
-
-/* Legacy compat */
-.glass-card {
-  background: white;
-  border: 1px solid hsl(var(--neutral-200));
-  border-radius: 10px;
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.04);
-}
+.glass-card { @apply ts-card; }

@@ -24,6 +24,7 @@ import EvaluationResult from "@/pages/evaluation/result";
 import OrgDashboard from "@/pages/org-management/dashboard";
 import TORequestForm from "@/pages/org-management/to-request/FormWizard";
 import TORequestsAdmin from "@/pages/org-management/requests";
+import EmployeesAdmin from "@/pages/org-management/employees";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +68,7 @@ function Router() {
       <Route path="/org-management/dashboard" component={OrgDashboard} />
       <Route path="/org-management/to-request" component={TORequestForm} />
       <Route path="/org-management/requests" component={TORequestsAdmin} />
+      <Route path="/org-management/employees" component={EmployeesAdmin} />
 
       <Route component={NotFound} />
     </Switch>
