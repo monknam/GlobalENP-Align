@@ -372,4 +372,8 @@
 .ts-score-high   { color: hsl(var(--green-500)); }
 .ts-score-medium { color: hsl(var(--yellow-400)); }
 .ts-score-low    { color: hsl(var(--red-500)); }
-.glass-card { @apply ts-card; }
+.glass-card {
+  background: hsl(var(--enp-surface-lowest));
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(25,28,30,0.06), 0 1px 4px rgba(25,28,30,0.03);
+}
