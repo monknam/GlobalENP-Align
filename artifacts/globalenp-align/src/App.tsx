@@ -25,6 +25,9 @@ import OrgDashboard from "@/pages/org-management/dashboard";
 import TORequestForm from "@/pages/org-management/to-request/FormWizard";
 import TORequestsAdmin from "@/pages/org-management/requests";
 import EmployeesAdmin from "@/pages/org-management/employees";
+import SimpleEvalIndex from "@/pages/simple-eval/index";
+import SimpleEvalForm from "@/pages/simple-eval/form";
+import SimpleEvalAdmin from "@/pages/simple-eval/admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +72,11 @@ function Router() {
       <Route path="/org-management/to-request" component={TORequestForm} />
       <Route path="/org-management/requests" component={TORequestsAdmin} />
       <Route path="/org-management/employees" component={EmployeesAdmin} />
+
+      {/* 간이 성과평가 */}
+      <Route path="/simple-eval" component={SimpleEvalIndex} />
+      <Route path="/simple-eval/form/:evalId" component={SimpleEvalForm} />
+      <Route path="/simple-eval/admin" component={SimpleEvalAdmin} />
 
       <Route component={NotFound} />
     </Switch>

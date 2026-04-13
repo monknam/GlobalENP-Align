@@ -96,6 +96,13 @@ export function Shell({ children, guestMode = false }: ShellProps) {
       ],
     },
     {
+      title: "성과평가",
+      items: [
+        { href: "/simple-eval", label: "팀원 평가", icon: Award, show: isLeader },
+        { href: "/simple-eval/admin", label: "평가 현황 관리", icon: BarChart3, show: isAdmin },
+      ],
+    },
+    {
       title: "운영 설정",
       items: [
         { href: "/admin/surveys", label: "진단 운영", icon: Settings, show: isAdmin },
